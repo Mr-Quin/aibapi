@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "declaration": true,
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "types": ["node","mocha"],
+    "strict": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": ["node_modules","dist","tests"]
+}
