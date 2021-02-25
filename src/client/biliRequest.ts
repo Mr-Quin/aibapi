@@ -1,38 +1,27 @@
-import biliStore, { BiliCredential, BiliOptions } from '../store/store'
-import * as Bilibili from '../types'
-import { parseParamsVid } from './helpers'
+import biliStore, { BiliCredential, BiliOptions } from '../store'
+import { parseParamsVid } from '../helper'
 import { reduce } from 'async'
 import logger from '../service/logger'
 import { getApiRecursive } from './getApi'
-import bilibiliApi, { ApiList } from '../api'
-import { ApiKeyMaster } from '../types'
+import bilibiliApi, { ApiList, ApiReturns, ApiValues, Data } from '../api'
 
-export const biliLogin = (credential: Partial<BiliCredential>, options?: Partial<BiliOptions>) => {
-    biliStore.setState({ ...credential, ...options })
+export const biliConfig = (options: Partial<BiliCredential & BiliOptions>) => {
+    biliStore.setState({ ...options })
 }
 
-type Arrayable<T> = T | T[]
+// not used for now
+export type ApiSelector<T> = (apiList: ApiList) => T
 
-type ValueOf<T> = T[keyof T]
-
-type ApiKeys = keyof ApiList
-
-type ApiValues = ValueOf<ApiList>
-
-type ApiSelector = (apiList: ApiList) => Arrayable<ApiValues>
-
-type ApiReturns = { [k in keyof ApiList]: unknown }
-
-export const biliRequest = async (
-    selector: ApiSelector,
-    params: Bilibili.Data
+export const biliRequest = async <ApiSlice extends ApiValues>(
+    selector: ApiSelector<ApiSlice>,
+    params: Data = {}
 ): Promise<ApiReturns> => {
     const cache = { ...parseParamsVid(params) }
-    const api = selector(bilibiliApi)
-    const targets = Array.isArray(api) ? api.map((a) => a.name) : [api.name]
-    return (reduce(targets as ApiKeyMaster[], {}, async (acc, target) => {
+    const api: ApiValues = selector(bilibiliApi)
+    const targets = Array.isArray(api) ? api : [api]
+    return (reduce(targets, {}, async (acc, target) => {
         const result = await getApiRecursive(target)(parseParamsVid(params), cache)
-        logger.debug(`Target "${target}", result: ${JSON.stringify(result)}`)
-        return { ...acc, ...{ [target]: result } }
+        logger.debug(`Target "${JSON.stringify(target.name)}", result: ${JSON.stringify(result)}`)
+        return { ...acc, ...{ [target.name]: result } }
     }) as unknown) as ApiReturns
 }
