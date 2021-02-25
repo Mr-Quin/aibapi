@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from 'winston'
-import store from '../store/store'
+import store from '../store'
 const { combine, timestamp, printf, colorize } = format
 
 const customFormat = printf(({ level, message, timestamp }) => `${timestamp} ${level}: ${message}`)
