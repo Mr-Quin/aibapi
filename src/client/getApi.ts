@@ -1,28 +1,29 @@
-import * as Bilibili from '../types'
 import logger from '../service/logger'
-import bilibiliApi from '../api'
-import biliStore from '../store/store'
+import bilibiliApi, { ApiValue, Data } from '../api'
+import biliStore from '../store'
 import { compose, concatArray } from '../utils'
-import { checkParamsWith, filterParamsWith } from './helpers'
+import { checkParamsWith, filterParamsWith, generateReferer } from '../helper'
 
 // TODO: omit the "parents" property and use only "require" to determine recursive path
 // TODO: implement branching
 
-export const getApiRecursive = (target: keyof typeof bilibiliApi) => async (
-    params: Bilibili.Data,
-    cache: Bilibili.Data = {}
-): Promise<Bilibili.Data> => {
+export const getApiRecursive = (api: ApiValue) => async (
+    params: Data,
+    cache: Data = {}
+): Promise<Data> => {
+    if (!api) throw new Error(`Invalid api, api is ${api}`)
+    const target = api.name
     logger.debug(`Recursively getting "${target}"`)
     logger.debug(`Current cache: ${JSON.stringify(cache)}`)
     if (cache[target]) {
         logger.debug(`Target "${target}" found in cache, skipping recursion`)
         return cache[target]
     }
-    const api = bilibiliApi[target]
-    if (!api) throw new Error(`Requested target "${target}" does not exist.`)
+    // const api = bilibiliApi[target]
+    // if (!api) throw new Error(`Requested target "${target}" does not exist.`)
     const parent =
-        api.parents.find((key) => Object.keys(params).includes(key)) ??
-        api.parents.find((key) => Object.keys(bilibiliApi).includes(key))
+        api.parents?.find((key) => Object.keys(params).includes(key)) ??
+        api.parents?.find((key) => Object.keys(bilibiliApi).includes(key))
     logger.debug(
         `Getting "${target}"${
             parent ? ' via ' + '"' + parent + '"' : ''
@@ -30,34 +31,37 @@ export const getApiRecursive = (target: keyof typeof bilibiliApi) => async (
     )
     if (!parent) {
         // root
-        logger.debug(`Target "${target}" has no parents`)
+        logger.debug(`Target "${target}" is root`)
         const result = await getApi(api, params)
         cache[target] = result
         return result
     }
-    // if parent is in the cache, get cache
+    // if parent is in the cache, return cache
     if (cache[parent]) {
         logger.debug(`Parent "${parent}" found in cache, skipping recursion`)
         return getApi(api, cache)
     } else {
-        cache[parent] = await getApiRecursive(parent as keyof typeof bilibiliApi)(params, cache)
+        cache[parent] = await getApiRecursive(bilibiliApi[parent])(params, cache)
         return getApi(api, cache)
     }
 }
 
-export const getApi = async (api: Bilibili.ApiItem, params: Bilibili.Data) => {
+export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
     logger.debug(`Getting api: ${JSON.stringify(api, null)} with params: ${JSON.stringify(params)}`)
-    const { requestDelay, SESSDATA, bili_jct } = biliStore.getState()
+    const { requestDelay, SESSDATA } = biliStore.getState()
     const userAgent = biliStore.getState()['user-agent']
+    const referrer = generateReferer(params)
     return compose(
         api.get({
             delay: requestDelay,
+            method: api.method,
             headers: {
-                'user-agent': userAgent,
-                cookie: `SESSDATA=${SESSDATA}`,
+                'User-Agent': userAgent,
+                Cookie: `SESSDATA=${SESSDATA}`,
+                ...api.headers,
             },
         }),
-        filterParamsWith(concatArray(api.require, api.optional, [api.parents])),
-        checkParamsWith(concatArray(api.require, [api.parents]))
+        filterParamsWith(concatArray(api.require, api.optional, api.parents)),
+        checkParamsWith(concatArray(api.require, api.parents))
     )(params)
 }
