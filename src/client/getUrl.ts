@@ -1,26 +1,26 @@
 import { sleep } from '../utils'
 import got from 'got'
 import logger from '../service/logger'
-import * as Bilibili from '../types'
+import { Data, GeneralResponse } from '../api'
 
 export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
     headers?: {
-        cookie?: string
-        host?: string
-        origin?: string
-        referer?: string
-        'user-agent'?: string
+        Cookie?: string
+        Host?: string
+        Origin?: string
+        Referer?: string
+        'User-Agent'?: string
     }
 }
 
-const getUrl = <T extends Bilibili.GeneralResponse>(url: string, options?: UrlOption) => async (
-    searchParams: Bilibili.Data
+const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {}) => async (
+    searchParams: Data = {}
 ): Promise<T> => {
-    const headers = options?.headers ?? {}
-    const delay = options?.delay ?? 250
-    const method = options?.method ?? 'get'
+    const headers = options.headers ?? {}
+    const delay = options.delay ?? 250
+    const method = options.method ?? 'get'
 
     await sleep(delay)
     const response = await got[method]<T>(url, {
