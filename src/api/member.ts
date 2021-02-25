@@ -1,68 +1,59 @@
 import getUrl, { UrlOption } from '../client/getUrl'
 import { mapSeries } from 'async'
 import Api from './Api'
-import * as Bilibili from '../types'
+import {
+    MemberInfoResponse,
+    SpaceSearchResponse,
+    VideoInfoResponse,
+    MyInfoResponse,
+    VlistEntity,
+} from './index'
 
 export default {
-    memberInfo: new Api<Bilibili.MemberInfoResponse>('memberInfo', {
+    memberInfo: new Api<MemberInfoResponse>('memberInfo', {
         method: 'get',
         require: ['mid'],
-        optional: [],
-        parents: [],
-        callback: async (payload, options) => {
-            const defaultHeaders: Partial<UrlOption['headers']> = {
-                origin: 'https://www.bilibili.com',
-                host: 'api.bilibili.com',
-            }
-            const headers = { ...options?.headers, ...defaultHeaders }
-            return getUrl('https://api.bilibili.com/x/space/acc/info', {
-                ...options,
-                headers,
-            })(payload)
+        headers: {
+            Origin: 'https://www.bilibili.com',
+            Host: 'api.bilibili.com',
+        },
+        action: async (payload, options) => {
+            return getUrl('https://api.bilibili.com/x/space/acc/info', options)(payload)
         },
     }),
-    memberSubmissions: new Api<Bilibili.SpaceSearchResponse>('memberSubmissions', {
+    memberSubmissions: new Api<SpaceSearchResponse>('memberSubmissions', {
         method: 'get',
         require: ['mid'],
         optional: ['pn', 'ps'],
-        parents: [],
-        callback: (payload, options) => {
-            const defaultHeaders: Partial<UrlOption['headers']> = {
-                origin: 'https://www.bilibili.com',
-                host: 'api.bilibili.com',
-            }
-            const headers = { ...options?.headers, ...defaultHeaders }
+        headers: {
+            Origin: 'https://www.bilibili.com',
+            Host: 'api.bilibili.com',
+        },
+        action: (payload, options) => {
             const defaultPayload = {
                 pn: 1,
                 ps: 100,
             }
-            return getUrl<Bilibili.SpaceSearchResponse>(
+            return getUrl(
                 'https://api.bilibili.com/x/space/arc/search',
-                {
-                    ...options,
-                    headers,
-                }
+                options
             )({ ...defaultPayload, ...payload })
         },
     }),
-    memberSubmissionsAll: new Api('memberSubmissionsAll', {
+    memberSubmissionsAll: new Api<SpaceSearchResponse[]>('memberSubmissionsAll', {
         method: 'get',
         require: ['mid'],
         optional: ['pn', 'ps'],
         parents: ['spacePageCount'],
-        callback: async (payload, options) => {
-            const defaultHeaders: Partial<UrlOption['headers']> = {
-                origin: 'https://www.bilibili.com',
-                host: 'api.bilibili.com',
-            }
-            const headers = { ...options?.headers, ...defaultHeaders }
+        headers: {
+            Origin: 'https://www.bilibili.com',
+            Host: 'api.bilibili.com',
+        },
+        action: async (payload, options) => {
             return mapSeries([...Array(payload.spacePageCount).keys()], async (i) => {
-                return await getUrl<Bilibili.SpaceSearchResponse>(
+                return await getUrl(
                     'https://api.bilibili.com/x/space/arc/search',
-                    {
-                        ...options,
-                        headers,
-                    }
+                    options
                 )({
                     mid: payload.mid,
                     pn: (i + 1).toString(),
@@ -71,61 +62,70 @@ export default {
             })
         },
     }),
-    memberSubmissionCount: new Api('memberSubmissionCount', {
+    myInfo: new Api<MyInfoResponse>('myInfo', {
+        method: 'get',
+        parents: [],
+        headers: {
+            Origin: 'https://www.bilibili.com',
+            Host: 'api.bilibili.com',
+        },
+        action: async (payload, options) => {
+            return await getUrl('http://api.bilibili.com/x/member/web/account', options)(payload)
+        },
+    }),
+    memberSubmissionCount: new Api<number>('memberSubmissionCount', {
         method: 'get',
         parents: ['memberSubmissions'],
-        callback: (payload: { memberSubmissions: Bilibili.SpaceSearchResponse }) =>
-            payload.memberSubmissions.data!.page.count,
+        action: (payload: { memberSubmissions: SpaceSearchResponse }) =>
+            payload.memberSubmissions.data?.page.count,
     }),
-    memberVideos: new Api('memberVideos', {
+    memberVideos: new Api<VlistEntity[]>('memberVideos', {
         method: 'get',
         parents: ['memberSubmissions'],
-        callback: (payload: { memberSubmissions: Bilibili.SpaceSearchResponse }) =>
-            payload.memberSubmissions.data!.list.vlist,
+        action: (payload: { memberSubmissions: SpaceSearchResponse }) =>
+            payload.memberSubmissions.data?.list.vlist,
     }),
-    memberVideosAll: new Api('memberVideosAll', {
+    memberVideosAll: new Api<VlistEntity[]>('memberVideosAll', {
         method: 'get',
         parents: ['memberSubmissionsAll'],
-        callback: (payload: { memberSubmissionsAll: Bilibili.SpaceSearchResponse[] }) =>
-            payload.memberSubmissionsAll.map((item) => item.data?.list.vlist).flat(),
+        action: (payload: { memberSubmissionsAll: SpaceSearchResponse[] }) =>
+            payload.memberSubmissionsAll.flatMap((item) => item.data?.list.vlist),
     }),
-    memberVideosAllBvid: new Api('memberVideosAllBvid', {
+    memberVideosAllBvid: new Api<string[]>('memberVideosAllBvid', {
         method: 'get',
         parents: ['memberVideosAll'],
-        callback: (payload: { memberVideosAll: any[] }) =>
-            payload.memberVideosAll.map((d) => d.bvid),
+        action: (payload: { memberVideosAll: VlistEntity[] }) =>
+            payload.memberVideosAll.map((d) => d?.bvid),
     }),
-    spacePageCount: new Api('spacePageCount', {
+    spacePageCount: new Api<number>('spacePageCount', {
         method: 'get',
         parents: ['memberSubmissions'],
-        callback: (payload: { memberSubmissions: Bilibili.SpaceSearchResponse }) =>
+        action: (payload: { memberSubmissions: SpaceSearchResponse }) =>
             Math.ceil(
-                payload.memberSubmissions.data!.page.count / payload.memberSubmissions.data!.page.ps
+                (payload.memberSubmissions.data?.page.count ?? -1) /
+                    (payload.memberSubmissions.data?.page.ps ?? -1)
             ),
     }),
-    memberName: new Api('memberName', {
+    memberName: new Api<string>('memberName', {
         method: 'get',
         parents: ['memberInfo'],
-        callback: (payload: {
-            memberInfo?: Bilibili.MemberInfoResponse
-            videoInfo?: Bilibili.VideoInfoResponse
-        }) => {
-            if (payload['memberInfo']) return payload['memberInfo'].data!.name
-            if (payload['videoInfo']) return payload['videoInfo'].data!.owner.name
+        action: (payload: { memberInfo?: MemberInfoResponse; videoInfo?: VideoInfoResponse }) => {
+            if (payload['memberInfo']) return payload['memberInfo'].data?.name
+            if (payload['videoInfo']) return payload['videoInfo'].data?.owner.name
             return ''
         },
     }),
-    memberAvatar: new Api('memberAvatar', {
+    memberAvatar: new Api<string>('memberAvatar', {
         method: 'get',
         parents: ['memberInfo'],
-        callback: (payload: { memberInfo: Bilibili.MemberInfoResponse }) => {
+        action: (payload: { memberInfo: MemberInfoResponse }) => {
             return payload.memberInfo.data?.face
         },
     }),
-    mid: new Api('mid', {
+    mid: new Api<number>('mid', {
         method: 'get',
         parents: ['videoInfo'],
-        callback: (payload: { videoInfo: Bilibili.VideoInfoResponse }) => {
+        action: (payload: { videoInfo: VideoInfoResponse }) => {
             return payload.videoInfo.data?.owner.mid
         },
     }),
