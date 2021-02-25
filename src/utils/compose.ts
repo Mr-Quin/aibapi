@@ -1,4 +1,4 @@
-const compose = (...args: Function[]) => async (arg: any) => {
+const compose = (...args: ((arg: any) => any)[]) => async (arg: any): Promise<any> => {
     return args.reduceRight(async (acc, fn) => {
         return await fn(await acc)
     }, arg)
