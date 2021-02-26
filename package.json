@@ -2,11 +2,15 @@
   "name": "yaba",
   "version": "1.0.0",
   "description": "Api wrapper for Bilibili",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["dist/**/*"],
   "scripts": {
-    "watch": "tsc -w",
     "build": "tsc",
-    "lint": "eslint -c .eslintrc --ext .ts src",
-    "test": "mocha -r ts-node/register 'tests/**/*.ts' --reporter=nyan"
+    "lint": "eslint --fix -c .eslintrc --ext .ts src",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "mocha -r ts-node/register 'tests/**/*.ts' --reporter=nyan",
+    "coverage": "nyc npm run test"
   },
   "homepage": "https://github.com/Mr-Quin/bilibili-api",
   "bugs": "https://github.com/Mr-Quin/bilibili-api/issues",
