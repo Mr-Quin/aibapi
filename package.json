@@ -1,5 +1,5 @@
 {
-  "name": "@mrquin/bilibili-api",
+  "name": "@mr-quin/bilibili-api",
   "version": "1.0.0",
   "description": "Api wrapper for Bilibili",
   "main": "dist/index.js",
@@ -14,8 +14,8 @@
     "test": "mocha -r ts-node/register 'tests/**/*.ts' --reporter=nyan",
     "coverage": "nyc npm run test"
   },
-  "homepage": "https://github.com/Mr-Quin/aibapi",
-  "bugs": "https://github.com/Mr-Quin/aibapi/issues",
+  "homepage": "https://github.com/Mr-Quin/bilibili-api",
+  "bugs": "https://github.com/Mr-Quin/bilibili-api/issues",
   "keywords": [
     "bilibili",
     "api"
