@@ -2,8 +2,10 @@ import pick from 'lodash/pick'
 import { Data, ParamRequirement } from '../api'
 
 // check params against requirements, throw error if missing requirements, else return the params
-export const checkParamsWith = (requirement?: ParamRequirement) => (params: Data): Data => {
-    if (requirement === undefined) return params
+export const checkParamsWith = (requirement: ParamRequirement = []) => (
+    params: Data = {}
+): Data => {
+    if (requirement.length === 0) return params
     const isStringArray = requirement.every((item) => typeof item === 'string')
     const hasRequired = isStringArray
         ? requirement.every((p) => Object.keys(params).includes(p as string))
@@ -43,9 +45,9 @@ export const filterParamsWith = (filter?: ParamRequirement) => (params: Data): D
 
 export const generateReferer = (params: Data = {}) => {
     const { bvid, aid, avid, mid } = params
-    if (bvid) return { referer: `https://www.bilibili.com/video/${bvid}` }
-    if (aid || avid) return { referer: `https://www.bilibili.com/video/av${aid ?? avid}` }
-    if (mid) return { referer: `https://space.bilibili.com/${mid}` }
+    if (bvid) return { Referer: `https://www.bilibili.com/video/${bvid}` }
+    if (aid || avid) return { Referer: `https://www.bilibili.com/video/av${aid ?? avid}` }
+    if (mid) return { Referer: `https://space.bilibili.com/${mid}` }
     return {}
 }
 
