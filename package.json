@@ -2,8 +2,8 @@
   "name": "aibapi",
   "version": "0.1.0",
   "description": "Api wrapper for Bilibili",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": ["dist/**/*"],
   "scripts": {
     "build": "tsc",
