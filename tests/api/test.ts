@@ -30,7 +30,7 @@ env()
 const { SESSDATA, bili_jct } = process.env
 
 // sign in
-biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct, debug: true })
+biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
 
 describe('Basic tests', () => {
     it('can sign in', async () => {
