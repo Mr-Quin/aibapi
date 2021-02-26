@@ -50,7 +50,7 @@ export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
     logger.debug(`Getting api: ${JSON.stringify(api, null)} with params: ${JSON.stringify(params)}`)
     const { requestDelay, SESSDATA } = biliStore.getState()
     const userAgent = biliStore.getState()['user-agent']
-    const referrer = generateReferer(params)
+    const referer = generateReferer(params)
     return compose(
         api.get({
             delay: requestDelay,
@@ -58,6 +58,7 @@ export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
             headers: {
                 'User-Agent': userAgent,
                 Cookie: `SESSDATA=${SESSDATA}`,
+                ...referer,
                 ...api.headers,
             },
         }),
