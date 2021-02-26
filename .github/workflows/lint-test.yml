@@ -10,13 +10,6 @@ jobs:
     environment: Testing
     steps:
     - uses: actions/checkout@v2
-    - name: Echo
-      env:
-        SESSDATA: ${{ secrets.SESSDATA }}
-        bili_jct: ${{ secrets.BILI_JCT }}
-      run: |
-        echo "$SESSDATA"
-        echo "$bili_jct"
         
     - name: Install modules
       run: npm ci
