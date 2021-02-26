@@ -1,4 +1,4 @@
-import getUrl, { UrlOption } from '../client/getUrl'
+import getUrl from '../client/getUrl'
 import { mapSeries } from 'async'
 import Api from './Api'
 import {
@@ -109,11 +109,7 @@ export default {
     memberName: new Api<string>('memberName', {
         method: 'get',
         parents: ['memberInfo'],
-        action: (payload: { memberInfo?: MemberInfoResponse; videoInfo?: VideoInfoResponse }) => {
-            if (payload['memberInfo']) return payload['memberInfo'].data?.name
-            if (payload['videoInfo']) return payload['videoInfo'].data?.owner.name
-            return ''
-        },
+        action: (payload: { memberInfo: MemberInfoResponse }) => payload['memberInfo'].data?.name,
     }),
     memberAvatar: new Api<string>('memberAvatar', {
         method: 'get',
