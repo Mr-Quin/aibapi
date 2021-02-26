@@ -9,20 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 15
+    - name: Echo
       env:
         SESSDATA: ${{ secrets.SESSDATA }}
         bili_jct: ${{ secrets.BILI_JCT }}
-    - name: Echo
       run: |
         echo "$SESSDATA"
         echo "$bili_jct"
+        
     - name: Install modules
       run: npm ci
+      
     - name: Run ESLint
       run: npm run lint
+      
     - name: Run tests
+      env:
+        SESSDATA: ${{ secrets.SESSDATA }}
+        bili_jct: ${{ secrets.BILI_JCT }}
       run: npm test
       
