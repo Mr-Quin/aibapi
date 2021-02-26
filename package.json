@@ -1,5 +1,5 @@
 {
-  "name": "@mr-quin/bilibili-api",
+  "name": "@mrquin/bilibili-api",
   "version": "1.0.0",
   "description": "Api wrapper for Bilibili",
   "main": "dist/index.js",
