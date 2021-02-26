@@ -1,10 +1,12 @@
 {
   "name": "aibapi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Api wrapper for Bilibili",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist/**/*"],
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "tsc",
     "lint": "eslint --fix -c .eslintrc --ext .ts src",
