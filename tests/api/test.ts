@@ -34,8 +34,7 @@ biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct, debug: true })
 
 describe('Basic tests', () => {
     it('can sign in', async () => {
-        const info = await biliRequest((api) => api.videoInfo)
-
+        const info = await biliRequest((api) => api.myInfo)
         expect(isSignedIn()).to.equal(true)
         expect(info).to.have.property('code').to.equal(0)
     })

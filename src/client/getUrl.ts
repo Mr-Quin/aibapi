@@ -1,6 +1,5 @@
 import { sleep } from '../utils'
 import got from 'got'
-import logger from '../service/logger'
 import { Data, GeneralResponse } from '../api'
 
 export type UrlOption = {
@@ -36,7 +35,6 @@ const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {})
     response.on('error', (err) => {
         throw new Error(`Fetch ${response.url} failed. ${err}`)
     })
-    logger.info(`Getting ${url} with ${JSON.stringify(searchParams)} with delay ${delay}ms`)
     if (response.statusCode !== 200) {
         throw new Error(
             `Fetch ${response.url} failed. Status: ${response.statusCode} ${response.statusMessage}`
