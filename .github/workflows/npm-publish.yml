@@ -22,6 +22,7 @@ jobs:
         env:
           SESSDATA: ${{ secrets.SESSDATA }}
           bili_jct: ${{ secrets.BILI_JCT }}
+      - run: npm run build
       
   publish-npm:
     needs: build
