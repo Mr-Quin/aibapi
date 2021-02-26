@@ -1,4 +1,5 @@
 import biliStore from './store'
+import { biliConfig, biliRequest } from './client'
 
 const videoQualityDefinition = {
     6: 'MP4-240P',
@@ -15,4 +16,4 @@ const videoQualityDefinition = {
 const isSignedIn = () => biliStore.getState().SESSDATA !== ''
 
 export { isSignedIn, videoQualityDefinition }
-export { biliRequest, biliConfig } from './client'
+export { biliRequest, biliConfig }
