@@ -30,12 +30,12 @@ env()
 const { SESSDATA, bili_jct } = process.env
 
 // sign in
-biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct, debug: true })
+biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
 
 describe('Basic tests', () => {
+    // requires auth, don't put credentials into code
     it('can sign in', async () => {
-        const info = await biliRequest((api) => api.videoInfo)
-
+        const info = await biliRequest((api) => api.myInfo)
         expect(isSignedIn()).to.equal(true)
         expect(info).to.have.property('code').to.equal(0)
     })

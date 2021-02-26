@@ -11,7 +11,6 @@ export type BiliCredential = {
 export type BiliOptions = {
     'user-agent': string
     requestDelay: number
-    debug: boolean
 }
 
 const biliStore = create<BiliCredential & BiliOptions>(() => ({
