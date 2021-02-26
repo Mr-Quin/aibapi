@@ -6,6 +6,7 @@ import { Data, GeneralResponse } from '../api'
 export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
+    abort?: boolean
     headers?: {
         Cookie?: string
         Host?: string
@@ -32,7 +33,6 @@ const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {})
         },
         responseType: 'json',
     })
-
     response.on('error', (err) => {
         throw new Error(`Fetch ${response.url} failed. ${err}`)
     })
