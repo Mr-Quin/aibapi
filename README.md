@@ -12,10 +12,6 @@ const name = await biliRequest(({memberName})=>memberName, {mid:79})
 console.log(name) //saber酱
 ```
 
-- [Usage](#usage)
-- [Examples](#examples)
-- [Typescript](#Typescript)
-
 ## Usage
 
 Request one API
