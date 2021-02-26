@@ -1,6 +1,6 @@
 {
   "name": "@mr-quin/bilibili-api",
-  "version": "0.1.3",
+  "version": "1.0.0",
   "description": "Api wrapper for Bilibili",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
