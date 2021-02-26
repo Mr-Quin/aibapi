@@ -11,14 +11,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: Testing
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 15
+        env:
+          SESSDATA: ${{ secrets.SESSDATA }}
+          bili_jct: ${{ secrets.BILI_JCT }}
       - run: npm ci
       - run: npm test
-
+      
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
