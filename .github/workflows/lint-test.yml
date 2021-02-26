@@ -15,6 +15,10 @@ jobs:
       env:
         SESSDATA: ${{ secrets.SESSDATA }}
         bili_jct: ${{ secrets.BILI_JCT }}
+    - name: Echo
+      run: |
+        echo "$SESSDATA"
+        echo "$bili_jct"
     - name: Install modules
       run: npm ci
     - name: Run ESLint
