@@ -1,12 +1,12 @@
-# aibapi
+# bilibili-api
 Yet another Bilibili API wrapper because there are not enough in existence.
 
 Currently, the selection of APIs is quite small, more to be added...
 ```
-npm i aibapi -S
+npm i @mr-quin/bilibili-api -S
 ```
 ```typescript
-import { biliRequest } from "aibapi";
+import { biliRequest } from "@mr-quin/bilibili-api";
 
 const name = await biliRequest(({memberName})=>memberName, {mid:79})
 console.log(name) //saber酱
@@ -37,7 +37,7 @@ console.log(all) //[...]
 
 ### Some APIs need authentication
 ```typescript
-import { biliConfig, biliRequest } from "aibapi";
+import { biliConfig, biliRequest } from "@mr-quin/bilibili-api";
 
 // authenticate using cookie
 biliConfig({SESSDATA: '.....', bili_jct: '....'})
