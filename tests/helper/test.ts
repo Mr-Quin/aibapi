@@ -32,16 +32,16 @@ describe('Referrer maker tests', () => {
     it('works with bvid', () => {
         const result = generateReferer({ bvid: 'BV1xx411c7ub' })
         expect(result)
-            .to.have.property('referer')
+            .to.have.property('Referer')
             .to.equal('https://www.bilibili.com/video/BV1xx411c7ub')
     })
     it('works with aid', () => {
         const result = generateReferer({ aid: '2233' })
-        expect(result).to.have.property('referer').to.equal('https://www.bilibili.com/video/av2233')
+        expect(result).to.have.property('Referer').to.equal('https://www.bilibili.com/video/av2233')
     })
     it('works with mid', () => {
         const result = generateReferer({ mid: '79' })
-        expect(result).to.have.property('referer').to.equal('https://space.bilibili.com/79')
+        expect(result).to.have.property('Referer').to.equal('https://space.bilibili.com/79')
     })
     it('works without ids', () => {
         const result = generateReferer({})
