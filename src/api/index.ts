@@ -26,11 +26,9 @@ export type ApiKeyMaster =
     | 'videoStream'
     | 'videoTitle'
     | 'memberFollowing'
-    | 'videoDanmu'
-
-type Validation = { [k in ApiKeyMaster]: ApiValue }
-
-const validateApi = <T>(t: T) => t
+    | 'videoDanmakuRaw'
+// | 'videoDanmaku'
+// | 'videoDanmakuXml'
 
 const bilibiliApi = {
     ...memberApi,
@@ -39,6 +37,9 @@ const bilibiliApi = {
 }
 
 // check if api contains all keys listed in ApiKeyMaster
+// keeps keyof typeof bilibiliApi and ApiKeyMaster in sync
+type Validation = { [k in ApiKeyMaster]: Required<ApiValue> }
+const validateApi = <T>(t: T) => t
 validateApi<Validation>(bilibiliApi)
 
 export default bilibiliApi
@@ -48,6 +49,7 @@ export type ValueOf<T> = T[keyof T]
 export type Unwrap<T> = T extends PromiseLike<infer U> ? U : T
 export type ExtractGeneric<T> = T extends Api<infer X> ? X : unknown
 
+// TODO: there should be a better way of doing this
 export type ApiList = typeof bilibiliApi
 // export type ApiKeys = keyof ApiList
 export type ApiKeys = ApiKeyMaster
