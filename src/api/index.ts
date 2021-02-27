@@ -1,5 +1,6 @@
 import memberApi from './member'
 import videoApi from './video'
+import me from './me'
 import Api from './Api'
 
 export type ApiKeyMaster =
@@ -10,7 +11,7 @@ export type ApiKeyMaster =
     | 'like'
     | 'memberAvatar'
     | 'memberInfo'
-    | 'memberName'
+    | 'uname'
     | 'memberSubmissionCount'
     | 'memberSubmissions'
     | 'memberSubmissionsAll'
@@ -24,6 +25,8 @@ export type ApiKeyMaster =
     | 'videoInfo'
     | 'videoStream'
     | 'videoTitle'
+    | 'memberFollowing'
+    | 'videoDanmu'
 
 type Validation = { [k in ApiKeyMaster]: ApiValue }
 
@@ -32,6 +35,7 @@ const validateApi = <T>(t: T) => t
 const bilibiliApi = {
     ...memberApi,
     ...videoApi,
+    ...me,
 }
 
 // check if api contains all keys listed in ApiKeyMaster
@@ -167,8 +171,16 @@ export interface VideoStreamData {
     video_codecid: number
     seek_param: string
     seek_type: string
-    durl: VideoStreamDurl[]
+    dash?: Dash
+    durl?: VideoStreamDurl[]
     support_formats: VideoStreamSupportFormats[]
+}
+export interface VideoStreamSupportFormats {
+    quality: VideoAcceptQuality
+    format: string
+    new_description: string
+    display_desc: string
+    superscript: string
 }
 export interface VideoStreamDurl {
     order: number
@@ -179,12 +191,41 @@ export interface VideoStreamDurl {
     url: string
     backup_url?: null
 }
-export interface VideoStreamSupportFormats {
-    quality: VideoAcceptQuality
-    format: string
-    new_description: string
-    display_desc: string
-    superscript: string
+export interface Dash {
+    duration: number
+    minBufferTime: number
+    min_buffer_time: number
+    video: DashMediaEntity[]
+    audio: DashMediaEntity[]
+}
+export interface DashMediaEntity {
+    id: number
+    baseUrl: string
+    base_url: string
+    backupUrl?: null
+    backup_url?: null
+    bandwidth: number
+    mimeType: string
+    mime_type: string
+    codecs: string
+    width: number
+    height: number
+    frameRate: string
+    frame_rate: string
+    sar: string
+    startWithSap: number
+    start_with_sap: number
+    SegmentBase: SegmentBase
+    segment_base: Segment_Base
+    codecid: number
+}
+export interface SegmentBase {
+    Initialization: string
+    indexRange: string
+}
+export interface Segment_Base {
+    initialization: string
+    index_range: string
 }
 
 export interface SpaceSearchResponse extends GeneralResponse {
@@ -256,8 +297,8 @@ export interface MemberInfoData {
     birthday: string
     coins: number
     fans_badge: boolean
-    official: Official
-    vip: Vip
+    official: MemberInfoOfficial
+    vip: MemberInfoVip
     pendant: Pendant
     nameplate: Nameplate
     is_followed: boolean
@@ -266,13 +307,13 @@ export interface MemberInfoData {
     sys_notice: any
     live_room: LiveRoom
 }
-export interface Official {
+export interface MemberInfoOfficial {
     role: number
     title: string
     desc: string
     type: number
 }
-export interface Vip {
+export interface MemberInfoVip {
     type: number
     status: number
     theme_type: number
@@ -325,6 +366,49 @@ export interface MyInfoData {
     sex: string
     nick_free: boolean
     rank: string
+}
+
+export interface MemberFollowingResponse extends GeneralResponse {
+    data?: MemberFollowingData
+}
+export interface MemberFollowingData {
+    list: MemberFollowingList[]
+    re_version: number
+    total: number
+}
+export interface MemberFollowingList {
+    mid: number
+    attribute: number
+    mtime: number
+    tag: number[] | null
+    special: number
+    contract_info: ContractInfo
+    uname: string
+    face: string
+    sign: string
+    official_verify: OfficialVerify
+    vip: MemberFollowingListVip
+}
+export interface ContractInfo {
+    is_contractor: boolean
+    ts: number
+}
+export interface OfficialVerify {
+    type: number
+    desc: string
+}
+export interface MemberFollowingListVip {
+    vipType: number
+    vipDueDate: number
+    dueRemark: string
+    accessStatus: number
+    vipStatus: number
+    vipStatusWarn: string
+    themeType: number
+    label: Label
+}
+export interface Label {
+    path: string
 }
 
 export interface TripleResponse extends GeneralResponse {
