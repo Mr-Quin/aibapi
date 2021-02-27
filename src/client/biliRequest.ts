@@ -4,10 +4,6 @@ import { mapSeries } from 'async'
 import { getApiRecursive } from './getApi'
 import bilibiliApi, { ApiList, ApiValue, ApiValues, Data, ExtractGeneric } from '../api'
 
-export const biliConfig = (options: Partial<BiliCredential & BiliOptions>) => {
-    biliStore.setState({ ...options })
-}
-
 export type RequestAcceptedInput = ApiValue[] | [ApiValue] | ApiValue
 export type ApiSelector<T> = (apiList: ApiList) => T
 export type RequestReturn<T extends ApiValues> = T extends ApiValue
@@ -17,6 +13,10 @@ export type RequestReturn<T extends ApiValues> = T extends ApiValue
           [I in keyof T]: ExtractGeneric<T[I]>
       } & { length: T['length'] }
     : never
+
+export const biliConfig = (options: Partial<BiliCredential & BiliOptions>) => {
+    biliStore.setState({ ...options })
+}
 
 export const biliRequest = async <ApiSlice extends RequestAcceptedInput>(
     selector: ApiSelector<ApiSlice>,
