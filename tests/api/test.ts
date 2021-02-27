@@ -70,12 +70,6 @@ describe('Unit tests', () => {
         const memberFollowing = await biliRequest((api) => api.memberFollowing, { vmid: 2571249 })
         expect(memberFollowing.data?.list).to.be.an('array')
     })
-    it('gets danmu', async () => {
-        const videoDanmu = await biliRequest((api) => api.videoDanmu, { oid: 48582778 })
-        console.log(videoDanmu)
-        console.log(await decode(videoDanmu))
-        expect(videoDanmu).to.not.equal(undefined)
-    })
     it('works', async () => {
         // const aid = [...Array(100)].map((v) => Math.floor(Math.random() * 1e8))
         // const getData = async () =>

@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package bilibili.lib.rpc.track.model.broadcast;
+
+option java_multiple_files = true;
+option java_package = "com.bilibili.lib.rpc.track.model.broadcast";
+
+import "bilibili/lib/rpc/track/model/events.proto"; // for tunnel
+
+/*
+ * 描述：广播事件
+ *
+ * Created by gongzhen on 2019-09-27
+ */
+message BroadcastEvent {
+    string session = 1;
+    int64 start = 2;
+    int64 time = 3;
+
+    // 事件
+    Event event = 4;
+    // protocol if exist
+    string targe_path = 5;
+
+    // 事件自定义内容，非必须的，定义为字符串
+
+    // 延迟时间
+    string retry_delay = 6;
+    // 是否登录
+    string new_login = 7;
+    // network
+    string new_network = 8;
+
+    // 业务status
+    string status_code = 9;
+    string status_message = 10;
+
+    // exception
+    string exception_name = 11;
+    string exception_message = 12;
+
+    // server message id
+    string message_id = 13;
+
+    // heartbeat lost count
+    string heartbeat_lost = 14;
+
+    Tunnel tunnel = 15;
+
+    // 线程和进程
+    string process = 16;
+    string thread = 17;
+
+    // serial number
+    int32 sn = 18;
+
+    // 重试延迟时间
+    string restart_delay = 19;
+
+    string guid = 20;
+    string connection_id = 21;
+
+    // 统计
+    string stats_json = 22;
+    // 策略
+    string retry_policy_json = 23;
+    string restart_policy_json = 24;
+
+    // 上报开关事件
+    int32 enabled = 25;
+    int32 enabled_config = 26;
+    int32 enabled_device = 27;
+
+    // 上报业务开关事件
+    int32 biz_enabled = 28;
+    int32 biz_enabled_config = 29;
+    int32 biz_enabled_tunnel = 30;
+}
+
+
+enum Event {
+    // 启动
+    START = 0;
+    // 停止
+    STOP = 1;
+    // 重试
+    RETRY = 2;
+
+    // 网络状态变化
+    NETWORK_CHANGED = 3;
+    // 登录状态变化
+    AUTH_CHANGED = 4;
+    // 重连
+    RESTART = 5;
+
+    // 鉴权通过，连接可用
+    VALID = 6;
+    // 鉴权失败
+    AUTH_FAILED = 7;
+    // 连接不可用
+    INVALID = 8;
+
+    // 业务注册
+    REG = 9;
+    // 业务注册成功
+    REG_SUCCESS = 10;
+    // 业务注册失败
+    REG_FAILED = 11;
+
+    // 业务注销
+    UNREG = 12;
+    // 业务注销成功
+    UNREG_SUCCESS = 13;
+    // 业务注销失败
+    UNREG_FAILED = 14;
+
+    // 业务正常响应
+    NEXT_RESP = 15;
+    // 业务错误响应
+    ERROR_RESP = 16;
+
+    // ack
+    ACK = 17;
+
+    // 心跳请求
+    HEARTBEAT_REQ = 18;
+    // 心跳响应
+    HEARTBEAT_RESP = 19;
+    // 心跳丢失
+    HEARTBEAT_LOST = 20;
+
+    // app 可见
+    APP_VISIBLE = 21;
+    // app 切后台
+    APP_INVISIBLE = 22;
+
+    // 统计
+    STATS = 23;
+
+    // 上报开关事件
+    ENABLED = 24;
+    // 上报业务开关事件
+    BIZ_ENABLED = 25;
+}

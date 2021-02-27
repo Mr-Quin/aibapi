@@ -1,0 +1,238 @@
+syntax = "proto3";
+package bilibili.im.gateway.v1;
+
+import "bilibili/im/type/im.proto";
+
+option go_package = "git.bilibili.co/bapis/bapis-go/bilibili/im/gateway/v1;v1";
+
+option java_package = "com.bapis.bilibili.im.gateway.v1";
+option java_multiple_files = true;
+
+option objc_class_prefix = "BAPIImGatewayV1";
+
+// EN_CMD_ID_SEND_MSG
+message ReqSendMsg {
+    bilibili.im.type.Msg msg = 1; //消息内容 required
+    bool instant = 2; //是否即时消息，即时消息仅发送至在线用户;
+    string cookie = 3;
+    string cookie2= 4;
+    int32  official_msg = 5;
+    int32  error_code = 6;         //批量发送的时候才需要。把返回的code写到req里面传回去
+    string dev_id = 7; // 用于web_im
+    bool 	sync=8 ;		//用于业务方私信，是否为同步发送的消息，1--同步发送，0--异步发送，默认为异步发送
+    bilibili.im.type.ExtInfo ext_info = 9;
+    int32 inbox_opt = 10;
+    uint64 permit = 12;//权限校验位
+};
+
+message RspSendMsg {
+    uint64 msg_key = 1;
+};
+
+// EN_CMD_ID_SYNC_MSG
+message ReqMsgSync
+{
+    uint64 client_seqno = 1; //客户端当前seqno
+    uint32 msg_count = 2;      //客户端请求的消息数量
+    uint64 uid = 3;
+    bool has_self = 4; // 是否需要拉取自己发出的消息，用于多端同步
+    string dev_id = 5; // 用于web_im
+};
+
+message RspMsgSync
+{
+    bool has_more = 1;     //是否有更多消息
+    uint64 max_seqno = 2; //本次同步消息中最大的seqno
+    repeated bilibili.im.type.Msg messages = 3;   //返回的消息列表
+};
+
+// EN_CMD_ID_SYNC_RELATION
+message ReqRelationSync
+{
+    uint64 client_relation_oplog_seqno = 1; //客户端当前seqno
+};
+
+message RspRelationSync
+{
+    int32 full = 1;
+    repeated bilibili.im.type.RelationLog relation_logs = 2; //增量日志
+    repeated bilibili.im.type.FriendRelation friend_list = 3; //全量列表
+    uint64 server_relation_oplog_seqno = 4;//服务器端最大的relation seqno
+    repeated bilibili.im.type.GroupRelation group_list = 5; //全量列表
+};
+
+// EN_CMD_ID_SYNC_ACK
+message ReqSyncAck
+{
+    uint64 client_seqno = 1;   //客户端已同步seqno
+};
+
+message RspSyncAck
+{
+};
+
+// EN_CMD_ID_SYNC_FETCH_SESSION_MSGS
+message ReqSessionMsg {
+    uint64 talker_id = 1;
+    int32  session_type = 2;
+    uint64 end_seqno = 3;
+    uint64 begin_seqno = 4;
+    int32  size = 5;
+    int32  order = 6; //0:new->old 1: old->new
+};
+
+message RspSessionMsg {
+    repeated bilibili.im.type.Msg messages = 1;
+    int32 has_more = 2;
+    uint64 min_seqno = 3;
+    uint64 max_seqno = 4;
+};
+
+// EN_CMD_ID_SESSION_SVR_GET_SESSIONS
+message ReqGetSessions{
+    uint64 begin_ts = 1;
+    uint64 end_ts = 2;
+    uint32 size = 3;
+    uint32 session_type = 4;
+    uint32 unfollow_fold = 5;
+    uint32 group_fold = 6;
+    uint32 sort_rule = 7;
+    uint32 teenager_mode = 8;//默认是0，普通模式 1-青少年模式
+    uint32 lessons_mode = 9;//默认是0，普通模式 1-课堂模式
+};
+
+// EN_CMD_ID_SESSION_SVR_NEW_SESSIONS
+message ReqNewSessions{
+    uint64 begin_ts = 1;
+    uint32 size = 2 ;
+    uint32 teenager_mode = 3;
+    uint32 lessons_mode = 4;//默认是0，普通模式 1-课堂模式
+};
+
+// EN_CMD_ID_SESSION_SVR_ACK_SESSIONS
+message ReqAckSessions{
+    uint64 begin_ts = 1;
+    uint32 end_ts = 2;
+    uint32 size = 3;
+};
+
+message RspSessions{
+    repeated bilibili.im.type.SessionInfo session_list = 1;
+    uint32       has_more = 2;
+};
+
+// EN_CMD_ID_SESSION_SVR_UPDATE_ACK
+message ReqUpdateAck{
+    uint64 talker_id = 1;//聊天对象uid，可以为用户id或者为群id
+    uint32 session_type = 2;//会话类型
+    uint64 ack_seqno = 3;//已读的最大seqno
+};
+
+// EN_CMD_ID_SESSION_SVR_SET_TOP
+message ReqSetTop{
+    uint64 talker_id = 1;
+    uint32 session_type = 2;
+    uint32 op_type = 3;//0：置顶，1：取消置顶
+};
+
+// EN_CMD_ID_SESSION_SVR_REMOVE_SESSION
+message ReqRemoveSession{
+    uint64 talker_id = 1;
+    uint32 session_type = 2;
+};
+
+message DummyRsp
+{
+    reserved 1; //兼容之前返回为[]的情况
+};
+
+// EN_CMD_ID_SESSION_SVR_SINGLE_UNREAD
+message ReqSingleUnread{
+    uint32 unread_type = 1;
+    uint32 show_unfollow_list = 2;
+};
+
+message RspSingleUnread{
+    uint64 unfollow_unread = 1;
+    uint64 follow_unread = 2;
+    uint32 unfollow_push_msg = 3; //未关注人列表是否有新业务通知
+
+};
+
+// EN_CMD_ID_SESSION_SVR_MY_GROUP_UNREAD EN_CMD_ID_SESSION_SVR_UPDATE_UNFLW_READ
+// 2019.05.06后添加用于多端同步的结构 session_svr使用
+message DummyReq{
+    uint32 idl = 1;
+};
+
+message RspMyGroupUnread{
+    uint32 unread_count = 1;
+};
+
+// EN_CMD_ID_SESSION_SVR_GROUP_ASSIS_MSG
+message ReqGroupAssisMsg {
+    uint64 client_seqno = 1;
+    uint32 size = 2;
+};
+
+// EN_CMD_ID_SESSION_SVR_ACK_ASSIS_MSG
+message ReqAckAssisMsg {
+    uint64 ack_seqno = 1;
+};
+
+// EN_CMD_ID_SESSION_SVR_SESSION_DETAIL
+message ReqSessionDetail{
+    uint64 talker_id = 1;
+    uint32 session_type = 2;
+    uint64 uid = 3;
+};
+
+// EN_CMD_ID_SESSION_SVR_BATCH_SESS_DETAIL
+message ReqSessionDetails{
+    repeated ReqSessionDetail sess_ids = 1;
+};
+
+message RspSessionDetails{
+    repeated bilibili.im.type.SessionInfo sess_infos = 1;
+};
+
+// EN_CMD_ID_SESSION_SVR_BATCH_RM_SESSIONS
+message ReqBatRmSess{
+
+}
+
+
+service ImGateway {
+    rpc SendMsg (ReqSendMsg) returns (RspSendMsg);
+
+    rpc SyncMsg (ReqMsgSync) returns (RspMsgSync);
+    rpc SyncRelation (ReqRelationSync) returns (RspRelationSync);
+    rpc SyncAck (ReqSyncAck) returns (RspSyncAck);
+    rpc SyncFetchSessionMsgs (ReqSessionMsg) returns (RspSessionMsg);
+
+    rpc GetSessions (ReqGetSessions) returns (RspSessions);
+    rpc NewSessions (ReqNewSessions) returns (RspSessions);
+    rpc AckSessions (ReqAckSessions) returns (RspSessions);
+    rpc UpdateAck (ReqUpdateAck) returns (DummyRsp);
+    rpc SetTop (ReqSetTop) returns (DummyRsp);
+    rpc RemoveSession (ReqRemoveSession) returns (DummyRsp);
+    rpc SingleUnread (ReqSingleUnread) returns (RspSingleUnread);
+    rpc MyGroupUnread (DummyReq) returns (RspMyGroupUnread);
+    rpc UpdateUnflwRead (DummyReq) returns (DummyRsp);
+    rpc GroupAssisMsg (ReqGroupAssisMsg) returns (RspSessionMsg);
+    rpc AckAssisMsg (ReqAckAssisMsg) returns (DummyRsp);
+    rpc SessionDetail (ReqSessionDetail) returns (bilibili.im.type.SessionInfo);
+    rpc BatchSessDetail (ReqSessionDetails) returns (RspSessionDetails);
+    rpc BatchRmSessions (ReqBatRmSess) returns (DummyRsp);
+}
+
+
+
+
+
+
+
+
+
+
+

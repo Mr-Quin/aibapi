@@ -1,0 +1,564 @@
+syntax = "proto3";
+
+package bilibili.app.view.v1;
+
+import "bilibili/app/archive/v1/archive.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "git.bilibili.co/bapis/bapis-go/bilibili/app/view/v1;v1";
+option java_multiple_files = true;
+option java_package = "com.bapis.bilibili.app.view.v1";
+option objc_class_prefix = "BAPIAppViewV1";
+
+// View 详情页相关接口
+service View {
+    // 获取详情页数据
+    rpc View (ViewReq) returns (ViewReply);
+    // 视频播放进度相关展示
+    rpc ViewProgress (ViewProgressReq) returns (ViewProgressReply);
+}
+
+// ViewReq 详情页请求参数
+message ViewReq {
+    // aid aid和bvid不同时为空
+    int64 aid = 1 ;
+    // bvid aid和bvid不同时为空
+    string bvid = 2 ;
+    // 来源from
+    string from = 3;
+    // ai trackid
+    string trackid = 4;
+    // ad
+    string ad_extra = 5;
+    // 清晰度qn
+    int32 qn = 6;
+    // fnver和fnval标识视频格式
+    int32 fnver = 7;
+    // fnver和fnval标识视频格式
+    int32 fnval = 8;
+    // 返回url是否强制使用域名(非ip地址), 1-http域名 2-https域名
+    int32 force_host = 9;
+    // 是否需要4k清晰度
+    int32 fourk = 10;
+    // spmid 当前页面
+    string spmid = 11;
+    // from_spmid 上级页面
+    string from_spmid = 12;
+    // autoplay
+    int32 autoplay = 13;
+}
+
+//  ViewReply 详情页返回结果
+message ViewReply {
+    // 稿件信息
+    archive.service.v1.Arc arc = 1;
+    // 分p信息
+    repeated ViewPage pages = 2;
+    // up信息
+    OnwerExt owner_ext = 3;
+    // 用户和up关系
+    ReqUser req_user = 4;
+    // tag
+    repeated Tag tag = 5;
+    // tag对应icon
+    map<string,TIcon> t_icon = 6;
+    // pgc season
+    Season season = 7;
+    // 充电排行
+    ElecRank elec_rank = 8;
+    // 历史进度
+    History history = 9;
+    // 相关推荐
+    repeated Relate relates = 10;
+    // 不感兴趣
+    Dislike dislike = 11;
+    // 播放
+    PlayerIcon player_icon = 12;
+    // vip active
+    string vip_active = 13;
+    // bvid
+    string bvid = 14;
+    // 稿件荣誉
+    Honor honor = 15;
+    // 相关推荐顶部tab
+    repeated RelateTab relate_tab = 16;
+    // 活动跳转链接
+    string activity_url = 17;
+    // 稿件bgm
+    repeated Bgm bgm = 18;
+    // 联合投稿
+    repeated Staff staff = 19;
+    // 争议信息
+    string argue_msg = 20;
+    // 短链
+    string short_link = 21;
+    // 播放实验 1=相关推荐自动播放
+    int32  play_param = 22;
+    // 标签
+    Label label = 23;
+    // ugc season
+    UgcSeason ugc_season = 24;
+    // 设置信息
+    Config config = 25;
+    // 分享副标题
+    string share_subtitle = 26;
+    // 互动视频信息
+    Interaction interaction = 27;
+    // 特殊处理错误码（优先判断，CODE404时读取custom_config，不处理其他数据）
+    ECode ecode = 28;
+    // 通用配置（404页面使用）
+    CustomConfig custom_config = 29;
+    // 广告字段
+    repeated CM cms = 30;
+    // 广告字段
+    CMConfig cm_config = 31;
+}
+
+enum ECode {
+    DEFAULT = 0;
+    CODE404 = 1;
+}
+
+message ViewPage {
+    archive.service.v1.Page page = 1;
+    Audio audio = 2;
+    DM dm = 3;
+    string download_title = 4;
+    string download_subtitle = 5;
+}
+
+message Audio {
+    string title = 1;
+    string cover_url = 2;
+    int64 song_id = 3;
+    int64 play_count = 4;
+    int64 reply_count = 5;
+    int64 upper_id = 6;
+    string entrance = 7;
+    int64 song_attr = 8;
+}
+
+message DM {
+    bool closed = 1;
+    bool real_name = 2;
+    int64 count = 3;
+}
+
+message OnwerExt {
+    OfficialVerify official_verify = 1;
+    Live live = 2;
+    Vip vip = 3;
+    repeated int64 assists = 4;
+    int64 fans = 5;
+}
+
+message OfficialVerify {
+    int32 type = 1;
+    string desc = 2;
+}
+
+message Live {
+    int64 mid = 1;
+    int64 roomid = 2;
+    string uri = 3;
+}
+
+message Vip {
+    int32 type = 1;
+    int64 due_date = 2;
+    string due_remark = 3;
+    int32 access_status = 4;
+    int32 vip_status = 5;
+    string vip_status_warn = 6;
+    int32 theme_type = 7;
+    VipLabel label = 8;
+}
+
+message VipLabel {
+    string path = 1;
+}
+
+message ReqUser {
+    int32 attention = 1;
+    int32 guest_attention = 2;
+    int32 favorite = 3;
+    int32 like = 4;
+    int32 dislike = 5;
+    int32 coin = 6;
+    int32 attention_level = 7;
+}
+
+message Tag {
+    int64 id = 1;
+    string name = 2;
+    int64 likes = 3;
+    int64 hates = 4;
+    int32 liked = 5;
+    int32 hated = 6;
+    string uri = 7;
+    string tag_type = 8;
+}
+
+message TIcon {
+    string icon = 1;
+}
+
+message Season {
+    string allow_download = 1;
+    int64 season_id = 2;
+    int32 is_jump = 3;
+    string title = 4;
+    string cover = 5;
+    int32 is_finish = 6;
+    int64 newest_ep_id = 7;
+    string newest_ep_index = 8;
+    int64 total_count = 9;
+    int32 weekday = 10;
+    UserSeason user_season = 11;
+    SeasonPlayer player = 12;
+    string ogv_playurl = 13;
+}
+
+message UserSeason {
+    string attention = 1;
+}
+
+message SeasonPlayer {
+    int64 aid = 1;
+    string vid = 2;
+    int64 cid = 3;
+    string from = 4;
+}
+
+message ElecRank {
+    repeated ElecRankItem list = 1;
+    int64 count = 2;
+}
+
+message ElecRankItem {
+    string avatar = 1;
+    string nickname = 2;
+    string message = 3;
+    int64 mid = 4;
+}
+
+message History {
+    int64 cid = 1;
+    int64 progress = 2;
+}
+
+message Relate{
+    int64 aid = 1;
+    string pic = 2;
+    string title = 3;
+    archive.service.v1.Author author = 4;
+    archive.service.v1.Stat stat = 5;
+    int64 duration = 6;
+    string goto = 7;
+    string param = 8;
+    string uri = 9;
+    string jump_url = 10;
+    double rating = 11;
+    string reserve = 12;
+    string from = 13;
+    string desc = 14;
+    string rcmd_reason = 15;
+    string badge = 16;
+    int64 cid = 17;
+    int32 season_type = 18;
+    int32 rating_count = 19;
+    string tag_name = 20;
+    PackInfo pack_info = 21;
+    Notice notice = 22;
+    Button button = 23;
+    string trackid = 24;
+    //游戏卡片新样式
+    int32 new_card = 25;
+    //推荐理由样式
+    ReasonStyle rcmd_reason_style = 26;
+    string cover_gif = 27;
+    // 广告卡字段
+    CM cm = 28;
+}
+
+message ReasonStyle {
+    string text = 1;
+    // 日间模式
+    string text_color = 2;
+    string bg_color = 3;
+    string border_color = 4;
+    // 夜间模式
+    string text_color_night = 5;
+    string bg_color_night = 6;
+    string border_color_night = 7;
+    // 1:填充 2:描边 3:填充 + 描边 4:背景不填充 + 背景不描边
+    int32 bg_style = 8;
+    int32 selected = 9;
+}
+
+message PackInfo {
+    string title = 1;
+    string uri = 2;
+}
+
+message Notice {
+    string title = 1;
+    string desc = 2;
+}
+
+message Button {
+    string title = 1;
+    string uri = 2;
+}
+
+message Dislike {
+    string title = 1;
+    string subtitle = 2;
+    repeated DislikeReasons reasons = 3;
+}
+
+message DislikeReasons {
+    int64 id = 1;
+    int64 mid = 2;
+    int32 rid = 3;
+    int64 tag_id = 4;
+    string name = 5;
+}
+
+message PlayerIcon {
+    string url1 = 1;
+    string hash1 = 2;
+    string url2 = 3;
+    string hash2 = 4;
+}
+
+message CM {
+    google.protobuf.Any source_content = 1;
+}
+
+message AdInfo {
+    int64 creative_id = 1;
+    int64 creative_type = 2;
+    CreativeContent creative_content = 3;
+    string ad_cb = 4;
+    int32 card_type = 5;
+    bytes Extra = 6;
+}
+
+message CreativeContent {
+    string title = 1;
+    string description = 2;
+    string button_title = 3;
+    int64 video_id = 4;
+    string username = 5;
+    string image_url = 6;
+    string image_md5 = 7;
+    string log_url = 8;
+    string log_md5 = 9;
+    string url = 10;
+    string click_url = 11;
+    string show_url = 12;
+}
+
+message CMConfig {
+    google.protobuf.Any ads_control = 1;
+}
+
+message Asset {
+    int32 paid = 1;
+    int64 price = 2;
+    AssetMsg msg = 3;
+    AssetMsg preview_msg = 4;
+}
+
+message AssetMsg {
+    string desc1 = 1;
+    string desc2 = 2;
+}
+
+message Bgm {
+    int64 sid = 1;
+    int64 mid = 2;
+    string title = 3;
+    string author = 4;
+    string jump_url = 5;
+    string cover = 6;
+}
+
+message Staff {
+    int64 mid = 1;
+    string title = 2;
+    string face = 3;
+    string name = 4;
+    OfficialVerify official_verify = 5;
+    Vip vip = 6;
+    int32 attention = 7;
+    int32 label_style = 8;
+}
+
+message Label {
+    int32 type = 1;
+    string uri = 2;
+}
+
+message UgcSeason {
+    int64 id = 1;
+    string title = 2;
+    string cover = 3;
+    string intro = 4;
+    repeated Section sections = 5;
+    UgcSeasonStat stat = 6;
+    string label_text = 7;
+    string label_text_color = 8;
+    string label_bg_color = 9;
+    string label_text_night_color = 10;
+    string label_bg_night_color = 11;
+    string desc_right = 12;
+    int64 ep_count = 13;
+}
+
+message UgcSeasonStat {
+    int64 season_id = 1;
+    // 播放数
+    int32 view = 2;
+    // 弹幕数
+    int32 danmaku = 3;
+    // 评论数
+    int32 reply = 4;
+    // 收藏数
+    int32 fav = 5;
+    // 投币数
+    int32 coin = 6;
+    // 分享数
+    int32 share = 7;
+    // 当前排名
+    int32 now_rank = 8;
+    // 历史最高排名
+    int32 his_rank = 9;
+    // 点赞数
+    int32 like = 10;
+}
+
+message Section {
+    int64 id = 1;
+    string title = 2;
+    int64  type = 3;
+    repeated Episode episodes = 4;
+}
+
+message Episode {
+    int64 id = 1;
+    int64 aid = 2;
+    int64 cid = 3;
+    // ep's title
+    string title = 4;
+    // arc's cover
+    string cover = 5;
+    string cover_right_text = 6;
+    archive.service.v1.Page page = 7;
+    // archive's stat
+    archive.service.v1.Stat stat = 8;
+    string bvid = 9;
+}
+
+message Config {
+    string relates_title = 1;
+    int32 relates_style = 2;
+    int32 relate_gif_exp = 3;
+    int32 end_page_half = 4;
+    int32 end_page_full = 5;
+}
+
+message Interaction {
+    Node history_node = 1;
+    int64 graph_version = 2;
+    string msg = 3;
+    // 预留字段，暂时无值
+    string evaluation = 4;
+    int64  mark = 5;
+}
+
+message Honor {
+    string icon = 1;
+    string icon_night = 2;
+    string text = 3;
+    string text_extra = 4;
+    string text_color = 5;
+    string text_color_night = 6;
+    string bg_color = 7;
+    string bg_color_night = 8;
+    string url = 9;
+    string url_text = 10;
+}
+
+// RelateTab
+message RelateTab {
+    string id = 1;
+    string title = 2;
+}
+
+message UpAct {
+    int64  sid = 1;
+    int64  mid = 2;
+    string title = 3;
+    string statement = 4;
+    string image = 5;
+    string url = 6;
+    string button = 7;
+}
+
+message Node {
+    int64 node_id = 1;
+    string title = 2;
+    int64 cid = 3;
+}
+
+message ViewProgressReq {
+    // 稿件aid
+    int64 aid = 1;
+    // 视频cid
+    int64 cid = 2;
+    // 稿件up主mid
+    int64 up_mid = 3;
+}
+
+message ViewProgressReply {
+    // 视频引导信息
+    VideoGuide video_guide = 1;
+}
+
+message VideoGuide {
+    // 关注展现
+    repeated Attention attention = 1;
+    // 指令弹幕
+    repeated CommandDm commandDms = 2;
+}
+
+//指令弹幕
+message CommandDm {
+    int64 id = 1; //弹幕id
+    int64 oid = 2; //oid
+    int64 mid = 3; //mid
+    string command = 4; //弹幕指令
+    string content = 5; //弹幕内容
+    int32 progress = 6;
+    string ctime = 7;  //创建时间
+    string mtime = 8; //修改时间
+    string extra = 9; //修改时间
+    string idStr = 10; //id字符类型
+}
+
+message Attention {
+    // 开始时间（秒）
+    int32 start_time = 1;
+    // 结束时间（秒）
+    int32 end_time = 2;
+    // 位置x坐标
+    double pos_x = 3;
+    // 位置y坐标
+    double pos_y = 4;
+}
+
+message CustomConfig {
+    string redirect_url = 1;
+}
