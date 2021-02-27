@@ -10,6 +10,6 @@ export const decode = (buffer: Buffer) => {
         throw err
     }
     const decode = bilibili.community.service.dm.v1.DmSegMobileReply.decode(buffer)
-    console.log(decode.elems[0])
+    console.log(decode.elems[0].id)
     return decode
 }
