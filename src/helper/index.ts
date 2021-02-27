@@ -2,10 +2,10 @@ import { Data } from '../api'
 
 export const generateReferer = (params: Data = {}) => {
     const { bvid, aid, avid, mid } = params
-    if (bvid) return { Referer: `https://www.bilibili.com/video/${bvid}` }
-    if (aid || avid) return { Referer: `https://www.bilibili.com/video/av${aid ?? avid}` }
-    if (mid) return { Referer: `https://space.bilibili.com/${mid}` }
-    return {}
+    if (bvid) return `https://www.bilibili.com/video/${bvid}`
+    if (aid || avid) return `https://www.bilibili.com/video/av${aid ?? avid}`
+    if (mid) return `https://space.bilibili.com/${mid}`
+    return null
 }
 
 const parseVidType = (videoId: string | number) => {
