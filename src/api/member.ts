@@ -1,13 +1,7 @@
 import getUrl from '../client/getUrl'
 import { mapSeries } from 'async'
 import Api from './Api'
-import {
-    MemberInfoResponse,
-    SpaceSearchResponse,
-    VideoInfoResponse,
-    MyInfoResponse,
-    VlistEntity,
-} from './index'
+import { MemberInfoResponse, SpaceSearchResponse, VideoInfoResponse, VlistEntity } from './index'
 
 export default {
     memberInfo: new Api<MemberInfoResponse>('memberInfo', {
@@ -15,7 +9,6 @@ export default {
         require: ['mid'],
         headers: {
             Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
         },
         action: async (payload, options) => {
             return getUrl('https://api.bilibili.com/x/space/acc/info', options)(payload)
@@ -27,7 +20,6 @@ export default {
         optional: ['pn', 'ps'],
         headers: {
             Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
         },
         action: (payload, options) => {
             const defaultPayload = {
@@ -47,7 +39,6 @@ export default {
         parents: ['spacePageCount'],
         headers: {
             Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
         },
         action: async (payload, options) => {
             return mapSeries([...Array(payload.spacePageCount).keys()], async (i) => {
@@ -62,17 +53,7 @@ export default {
             })
         },
     }),
-    myInfo: new Api<MyInfoResponse>('myInfo', {
-        method: 'get',
-        parents: [],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
-        },
-        action: async (payload, options) => {
-            return await getUrl('http://api.bilibili.com/x/member/web/account', options)(payload)
-        },
-    }),
+
     memberSubmissionCount: new Api<number>('memberSubmissionCount', {
         method: 'get',
         parents: ['memberSubmissions'],
@@ -106,7 +87,7 @@ export default {
                     (payload.memberSubmissions.data?.page.ps ?? -1)
             ),
     }),
-    memberName: new Api<string>('memberName', {
+    uname: new Api<string>('uname', {
         method: 'get',
         parents: ['memberInfo'],
         action: (payload: { memberInfo: MemberInfoResponse }) => payload['memberInfo'].data?.name,
