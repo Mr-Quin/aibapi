@@ -24,9 +24,8 @@ const biliStore = create<BiliCredential & BiliOptions>(() => ({
     'user-agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36',
     requestDelay: 250,
-    origin: '',
-    referer: '',
-    g: '',
+    origin: 'https://www.bilibili.com',
+    referer: 'https://www.bilibili.com',
 }))
 
 export default biliStore
