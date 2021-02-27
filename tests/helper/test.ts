@@ -29,260 +29,115 @@ describe('Params parser tests', () => {
     })
 })
 
-describe('Referer maker tests', () => {
-    it('works with bvid', () => {
-        const result = generateReferer({ bvid: 'BV1xx411c7ub' })
-        expect(result)
-            .to.have.property('Referer')
-            .to.equal('https://www.bilibili.com/video/BV1xx411c7ub')
-    })
-    it('works with aid', () => {
-        const result = generateReferer({ aid: '2233' })
-        expect(result).to.have.property('Referer').to.equal('https://www.bilibili.com/video/av2233')
-    })
-    it('works with mid', () => {
-        const result = generateReferer({ mid: '79' })
-        expect(result).to.have.property('Referer').to.equal('https://space.bilibili.com/79')
-    })
-    it('works without ids', () => {
-        const result = generateReferer({})
-        expect(result).to.deep.equal({})
-    })
-})
+// describe('Referer maker tests', () => {
+//     it('works with bvid', () => {
+//         const result = generateReferer({ bvid: 'BV1xx411c7ub' })
+//         expect(result).to.equal('https://www.bilibili.com/video/BV1xx411c7ub')
+//     })
+//     it('works with aid', () => {
+//         const result = generateReferer({ aid: '2233' })
+//         expect(result).to.equal('https://www.bilibili.com/video/av2233')
+//     })
+//     it('works with mid', () => {
+//         const result = generateReferer({ mid: '79' })
+//         expect(result).to.equal('https://space.bilibili.com/79')
+//     })
+//     it('works with random props', () => {
+//         const result = generateReferer({ a: 1, b: null, c: '', d: undefined })
+//         expect(result).to.equal(null)
+//     })
+//     it('works without ids', () => {
+//         const result = generateReferer({})
+//         expect(result).to.deep.equal(null)
+//     })
+// })
 
-const av = [
-    84912579,
-    77647937,
-    47095838,
-    20940691,
-    12786023,
-    59103983,
-    37348483,
-    21396040,
-    32602181,
-    13384333,
-    3375321,
-    43489507,
-    78740640,
-    93262079,
-    44970850,
-    56217647,
-    7517480,
-    48985670,
-    26599242,
-    34940497,
-    10661363,
-    1138702,
-    8968544,
-    49181263,
-    26129343,
-    20361018,
-    55410992,
-    68245829,
-    11798193,
-    25285016,
-    94638021,
-    69168758,
-    12819330,
-    20092649,
-    5388583,
-    85003482,
-    41687843,
-    18874317,
-    39460447,
-    50306592,
-    40484494,
-    60876101,
-    97719335,
-    45011831,
-    91571097,
-    30996821,
-    99338821,
-    78133183,
-    19173944,
-    69476059,
-    96111005,
-    17874269,
-    9040269,
-    79539167,
-    10202297,
-    32342010,
-    5772629,
-    94564088,
-    50414556,
-    9026639,
-    43907533,
-    14690354,
-    64246761,
-    73157337,
-    59432393,
-    52215944,
-    81253314,
-    76999194,
-    12614979,
-    42180342,
-    77399343,
-    58438518,
-    90448399,
-    73223206,
-    62848722,
-    11389363,
-    95267049,
-    46924192,
-    10942883,
-    30040230,
-    2504042,
-    90567632,
-    31056591,
-    422127,
-    64579330,
-    68341577,
-    21709814,
-    11074704,
-    10539331,
-    56478555,
-    42163549,
-    15780268,
-    54208443,
-    15632373,
-    63579976,
-    81266395,
-    31198587,
-    60420012,
-    82260442,
-    43733491,
-    170001,
-    455017605,
-    882584971,
-    2,
-]
-const bv = [
-    null,
-    null,
-    'BV11b41177a6',
-    null,
-    'BV1ox411W7y4',
-    'BV18t411V7Qn',
-    null,
-    'BV1LW411u7wy',
-    null,
-    'BV1Zx411E7Fp',
-    'BV15s411o7VF',
-    null,
-    'BV1WJ411y7dt',
-    'BV1bE41177Qs',
-    'BV1Hb411b7zu',
-    'BV1A441137rY',
-    'BV1ts411e7sL',
-    'BV14b411M7f3',
-    null,
-    'BV1Ub411A7Xr',
-    null,
-    null,
-    'BV1Dx411k7ML',
-    'BV12b411K7Xw',
-    null,
-    null,
-    'BV1W4411P7mA',
-    'BV1TJ41137zh',
-    'BV1kx411B7qz',
-    null,
-    'BV1pE411M7oS',
-    'BV12J411T7SD',
-    'BV1Tx411s7ia',
-    null,
-    'BV1ws411172v',
-    'BV137411k7iL',
-    'BV1ht411479Z',
-    'BV1dW411e76j',
-    'BV1jt41167mj',
-    'BV1rb411G7nX',
-    'BV1wt411W7HA',
-    'BV1mt411A7pw',
-    null,
-    'BV1sb411b7Ng',
-    null,
-    'BV12W411o7ur',
-    'BV1B741117m5',
-    'BV1KJ411i7vS',
-    null,
-    null,
-    null,
-    null,
-    null,
-    'BV1qJ41167wZ',
-    null,
-    null,
-    null,
-    'BV1aE411g7PU',
-    null,
-    null,
-    null,
-    'BV1Vx411G7wD',
-    'BV194411d7G4',
-    'BV15E411y7pd',
-    'BV18t411G7c9',
-    'BV1D4411h7DN',
-    'BV1TJ411Y7fA',
-    'BV17J411R798',
-    'BV19x411p7YM',
-    null,
-    'BV1uJ411Q78h',
-    null,
-    'BV1o7411c7SF',
-    null,
-    'BV1Ut411N792',
-    'BV1Px411h7wq',
-    'BV15E411K7Dj',
-    null,
-    'BV1ux411e7wM',
-    null,
-    'BV1Ps411S7DT',
-    null,
-    'BV1KW411Z7Pq',
-    'BV1yx411F7eh',
-    'BV194411R7C8',
-    'BV1iJ4113781',
-    null,
-    'BV1Tx411a7yk',
-    'BV1mx411e7gq',
-    'BV1r4411u7MM',
-    'BV1Jb411y7dz',
-    null,
-    'BV1s4411p77p',
-    'BV1Fx411u7Fd',
-    'BV1o4411S7nU',
-    'BV16J41187Td',
-    'BV1jW411d7sj',
-    'BV1Yt41177zA',
-    null,
-    'BV1wb411m764',
-    'BV17x411w7KC',
-    'BV1Q541167Qg',
-    'BV1mK4y1C7Bz',
-    'BV1xx411c7mD',
-]
+const bvav = {
+    BV11b41177a6: 47095838,
+    BV12b411K7Xw: 49181263,
+    BV12J411T7SD: 69168758,
+    BV12W411o7ur: 30996821,
+    BV137411k7iL: 85003482,
+    BV14b411M7f3: 48985670,
+    BV15E411K7Dj: 95267049,
+    BV15E411y7pd: 73157337,
+    BV15s411o7VF: 3375321,
+    BV16J41187Td: 81266395,
+    BV17J411R798: 76999194,
+    BV17x411w7KC: 170001,
+    BV18t411G7c9: 59432393,
+    BV18t411V7Qn: 59103983,
+    BV194411d7G4: 64246761,
+    BV194411R7C8: 64579330,
+    BV19x411p7YM: 12614979,
+    BV1A441137rY: 56217647,
+    BV1aE411g7PU: 94564088,
+    BV1B741117m5: 99338821,
+    BV1bE41177Qs: 93262079,
+    BV1D4411h7DN: 52215944,
+    BV1dW411e76j: 18874317,
+    BV1Dx411k7ML: 8968544,
+    BV1Fx411u7Fd: 15632373,
+    BV1Hb411b7zu: 44970850,
+    BV1ht411479Z: 41687843,
+    BV1iJ4113781: 68341577,
+    BV1Jb411y7dz: 42163549,
+    BV1jt41167mj: 39460447,
+    BV1jW411d7sj: 31198587,
+    BV1KJ411i7vS: 78133183,
+    BV1KW411Z7Pq: 31056591,
+    BV1kx411B7qz: 11798193,
+    BV1LW411u7wy: 21396040,
+    BV1mK4y1C7Bz: 882584971,
+    BV1mt411A7pw: 60876101,
+    BV1mx411e7gq: 10539331,
+    BV1o4411S7nU: 63579976,
+    BV1o7411c7SF: 90448399,
+    BV1ox411W7y4: 12786023,
+    BV1pE411M7oS: 94638021,
+    BV1Ps411S7DT: 2504042,
+    BV1Px411h7wq: 11389363,
+    BV1Q541167Qg: 455017605,
+    BV1qJ41167wZ: 79539167,
+    BV1r4411u7MM: 56478555,
+    BV1rb411G7nX: 50306592,
+    BV1s4411p77p: 54208443,
+    BV1sb411b7Ng: 45011831,
+    BV1TJ41137zh: 68245829,
+    BV1TJ411Y7fA: 81253314,
+    BV1ts411e7sL: 7517480,
+    BV1Tx411a7yk: 11074704,
+    BV1Tx411s7ia: 12819330,
+    BV1Ub411A7Xr: 34940497,
+    BV1uJ411Q78h: 77399343,
+    BV1Ut411N792: 62848722,
+    BV1ux411e7wM: 10942883,
+    BV1Vx411G7wD: 14690354,
+    BV1W4411P7mA: 55410992,
+    BV1wb411m764: 43733491,
+    BV1WJ411y7dt: 78740640,
+    BV1ws411172v: 5388583,
+    BV1wt411W7HA: 40484494,
+    BV1xx411c7mD: 2,
+    BV1Yt41177zA: 60420012,
+    BV1yx411F7eh: 422127,
+    BV1Zx411E7Fp: 13384333,
+}
 
 describe('Av Bv converter tests', () => {
     it('can encode and decode', () => {
-        const before = [...Array(5000)].map((v) => Math.floor(Math.random() * 1e10))
+        const before = [...Array(5000)].map(() => Math.floor(Math.random() * 1e10))
         const after = before.map((v) => av2bv(v)).map((v) => bv2av(v))
         expect(after).to.be.deep.equal(before)
     })
 
-    it('encodes correctly', () => {
-        const results = bv.reduce((acc, cur, i) => {
-            if (cur === null) return acc
-            return { ...acc, [av2bv(av[i])]: cur }
-        }, {})
-        expect(Object.keys(results).toString()).to.deep.equal(Object.values(results).toString())
+    it('decodes correctly', () => {
+        const results = Object.keys(bvav).map((bv) => bv2av(bv))
+        expect(results).to.deep.equal(Object.values(bvav))
     })
 
-    it('decodes correctly', () => {
-        const results = bv.reduce((acc, cur, i) => {
-            if (cur === null) return acc
-            return { ...acc, [av[i]]: bv2av(cur) }
-        }, {})
-        expect(Object.keys(results).toString()).to.deep.equal(Object.values(results).toString())
+    it('encodes correctly', () => {
+        const results = Object.values(bvav).map((av) => av2bv(av))
+        expect(results).to.deep.equal(Object.keys(bvav))
     })
 })
