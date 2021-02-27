@@ -11,12 +11,11 @@ export const getApiRecursive = (api: ApiValue) => async (
     cache: Data = {}
 ): Promise<Data> => {
     if (!api) throw new Error(`Invalid api, api is ${api}`)
+    // if target is in cache, return cache
     const target = api.name
     if (cache[target]) {
         return cache[target]
     }
-    // const api = bilibiliApi[target]
-    // if (!api) throw new Error(`Requested target "${target}" does not exist.`)
     const parent =
         api.parents?.find((key) => Object.keys(params).includes(key)) ??
         api.parents?.find((key) => Object.keys(bilibiliApi).includes(key))
@@ -27,7 +26,7 @@ export const getApiRecursive = (api: ApiValue) => async (
         cache[target] = result
         return result
     }
-    // if parent is in the cache, return cache
+    // if parent is in cache, return cache
     if (cache[parent]) {
         return getApi(api, cache)
     } else {
@@ -37,9 +36,9 @@ export const getApiRecursive = (api: ApiValue) => async (
 }
 
 export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
-    const { requestDelay, SESSDATA } = biliStore.getState()
+    const { requestDelay, SESSDATA, referer, origin } = biliStore.getState()
     const userAgent = biliStore.getState()['user-agent']
-    const referer = generateReferer(params)
+    // const referer = generateReferer(params)
     return compose(
         api.get({
             delay: requestDelay,
@@ -47,7 +46,8 @@ export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
             headers: {
                 'User-Agent': userAgent,
                 Cookie: `SESSDATA=${SESSDATA}`,
-                ...referer,
+                Referer: referer,
+                Origin: origin,
                 ...api.headers,
             },
         }),
