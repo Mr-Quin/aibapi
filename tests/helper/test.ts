@@ -1,6 +1,6 @@
 import { generateReferer, parseParamsVid } from '../../src/helper'
 import { expect } from 'chai'
-import { av2bv, bv2av } from '../../src/helper/avbv'
+import { av2bv, bv2av } from '../../src/helper'
 
 const videoMixed = {
     vid: 'BV1bW411t73v',

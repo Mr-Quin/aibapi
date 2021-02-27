@@ -1,6 +1,6 @@
 import biliStore, { BiliCredential, BiliOptions } from '../store'
-import { parseParamsVid } from '../helper'
 import { mapSeries } from 'async'
+import { parseParamsVid } from '../helper'
 import { getApiRecursive } from './getApi'
 import bilibiliApi, { ApiList, ApiValue, ApiValues, Data, ExtractGeneric } from '../api'
 

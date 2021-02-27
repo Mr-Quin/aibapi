@@ -1,6 +1,7 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { biliRequest, isSignedIn, biliConfig } from '../../src'
+import { biliRequest, biliConfig } from '../../src'
+import { isSignedIn } from '../../src/util'
 import { config as env } from 'dotenv-flow'
 import getUrl from '../../src/client/getUrl'
 import { decode } from '../../src/protobuf/parser'
@@ -71,7 +72,7 @@ describe('Unit tests', () => {
         expect(memberFollowing.data?.list).to.be.an('array')
     })
     it('gets danmu', async () => {
-        const videoDanmu = await biliRequest((api) => api.videoDanmaku, { oid: 297324635 })
+        const videoDanmu = await biliRequest((api) => api.videoDanmakuRaw, { oid: 297324635 })
         console.log(videoDanmu)
         decode(videoDanmu)
         expect('').to.not.equal(undefined)
