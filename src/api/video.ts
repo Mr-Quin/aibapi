@@ -16,27 +16,20 @@ export default {
     videoInfo: new Api<VideoInfoResponse>('videoInfo', {
         method: 'get',
         require: [['aid', 'bvid']],
-        parents: [],
+        headers: {
+            Origin: 'https://www.bilibili.com',
+        },
         action: (payload, options) => {
-            const defaultHeaders: Partial<UrlOption['headers']> = {
-                Origin: 'https://www.bilibili.com',
-                Host: 'api.bilibili.com',
-            }
-            const headers = { ...options?.headers, ...defaultHeaders }
-            return getUrl('https://api.bilibili.com/x/web-interface/view', {
-                ...options,
-                headers,
-            })(payload)
+            return getUrl('https://api.bilibili.com/x/web-interface/view', options)(payload)
         },
     }),
     videoStream: new Api<VideoStreamResponse[]>('videoStream', {
         method: 'get',
         require: [['avid', 'bvid']],
-        optional: ['type', 'platform', 'high_quality', 'qn', 'fourk', 'fnval'],
         parents: ['cid'],
+        optional: ['type', 'platform', 'high_quality', 'qn', 'fourk', 'fnval'],
         headers: {
             Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
         },
         action: async (payload, options) => {
             const defaultPayload = isSignedIn()
@@ -57,12 +50,12 @@ export default {
                     }),
                 ]
             } else {
-                return mapSeries(payload.cid, async (id: string) => {
+                return mapSeries(payload.cid, async (cid: string) => {
                     return getUrl(
                         'https://api.bilibili.com/x/player/playurl',
                         options
                     )({
-                        cid: id,
+                        cid,
                         ...omit({ ...defaultPayload, ...payload }, ['cid']),
                     })
                 })
@@ -94,7 +87,6 @@ export default {
         optional: ['multiply', 'like'],
         headers: {
             Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
         },
         action: async (payload, options) => {
             const defaultPayload = {
@@ -112,7 +104,6 @@ export default {
         require: [['aid', 'bvid']],
         headers: {
             Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
         },
         action: async (payload, options) => {
             const defaultPayload = {
