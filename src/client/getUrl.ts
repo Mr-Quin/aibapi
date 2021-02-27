@@ -6,7 +6,7 @@ export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
     abort?: boolean
-    responseType?: 'json' | 'text'
+    responseType?: 'json' | 'raw'
     headers?: {
         Cookie?: string
         Host?: string
@@ -16,16 +16,14 @@ export type UrlOption = {
     }
 }
 
-const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {}) => async (
-    searchParams: Data = {}
-): Promise<T> => {
+const getUrl = (url: string, options: UrlOption = {}) => async (searchParams: Data = {}) => {
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
-    const responseType = options.responseType === 'text' ? undefined : 'json'
+    const responseType = options.responseType === 'raw' ? undefined : 'json'
 
     await sleep(delay)
-    const response = await got[method]<T>(url, {
+    const response = await got[method](url, {
         headers: {
             ...headers,
         },
@@ -42,17 +40,7 @@ const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {})
             `Fetch ${response.url} failed. Status: ${response.statusCode} ${response.statusMessage}`
         )
     }
-    const body = response.body
-    // if (body.code && body.code !== 0) {
-    //     throw new Error(
-    //         `Fetch ${response.url} failed. Bilibili returned non-zero status code ${JSON.stringify(
-    //             body,
-    //             null,
-    //             2
-    //         )}`
-    //     )
-    // }
-    return body
+    return responseType === 'json' ? response.body : response.rawBody
 }
 
 export default getUrl
