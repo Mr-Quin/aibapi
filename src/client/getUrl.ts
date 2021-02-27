@@ -6,6 +6,7 @@ export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
     abort?: boolean
+    responseType?: 'json' | 'text'
     headers?: {
         Cookie?: string
         Host?: string
@@ -21,6 +22,7 @@ const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {})
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
+    const responseType = options.responseType === 'text' ? undefined : 'json'
 
     await sleep(delay)
     const response = await got[method]<T>(url, {
@@ -30,7 +32,7 @@ const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {})
         searchParams: {
             ...searchParams,
         },
-        responseType: 'json',
+        responseType,
     })
     response.on('error', (err) => {
         throw new Error(`Fetch ${response.url} failed. ${err}`)
