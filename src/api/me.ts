@@ -23,7 +23,7 @@ export default {
             return await getUrl('http://api.bilibili.com/x/relation/followings', options)(payload)
         },
     }),
-    videoDanmu: new Api<string>('videoDanmu', {
+    videoDanmakuRaw: new Api<Buffer>('videoDanmakuRaw', {
         method: 'get',
         require: ['oid'],
         optional: ['pid', 'segment_index', 'type'],
@@ -37,7 +37,7 @@ export default {
             }
             return await getUrl('http://api.bilibili.com/x/v2/dm/web/seg.so', {
                 ...options,
-                responseType: 'text',
+                responseType: 'raw',
             })({ ...defaultPayload, ...payload })
         },
     }),
