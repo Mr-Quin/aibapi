@@ -1,5 +1,4 @@
 // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/other/bvID.md
-
 const table = 'fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
 const elbat = {
     1: 13,
