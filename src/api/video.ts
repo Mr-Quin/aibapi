@@ -1,4 +1,4 @@
-import getUrl, { UrlOption } from '../client/getUrl'
+import getUrl from '../client/getUrl'
 import omit from 'lodash/omit'
 import { mapSeries } from 'async'
 import Api from './Api'
@@ -10,7 +10,7 @@ import {
     VideoInfoResponse,
     VideoStreamResponse,
 } from './index'
-import { isSignedIn } from '../index'
+import { isSignedIn } from '../util'
 
 export default {
     videoInfo: new Api<VideoInfoResponse>('videoInfo', {
