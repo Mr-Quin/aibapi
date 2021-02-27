@@ -41,4 +41,22 @@ export default {
             })({ ...defaultPayload, ...payload })
         },
     }),
+    videoDanmakuXml: new Api<Buffer>('videoDanmakuXml', {
+        method: 'get',
+        require: ['oid'],
+        optional: ['pid', 'segment_index', 'type'],
+        headers: {
+            Origin: 'https://www.bilibili.com',
+        },
+        action: async (payload, options) => {
+            const defaultPayload = {
+                type: 1,
+                segment_index: 1,
+            }
+            return await getUrl('http://api.bilibili.com/x/v2/dm/web/seg.so', {
+                ...options,
+                responseType: 'raw',
+            })({ ...defaultPayload, ...payload })
+        },
+    }),
 }

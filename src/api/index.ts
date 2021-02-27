@@ -27,8 +27,8 @@ export type ApiKeyMaster =
     | 'videoTitle'
     | 'memberFollowing'
     | 'videoDanmakuRaw'
-// | 'videoDanmaku'
-// | 'videoDanmakuXml'
+    // | 'videoDanmaku'
+    | 'videoDanmakuXml'
 
 const bilibiliApi = {
     ...memberApi,
