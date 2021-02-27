@@ -4,7 +4,6 @@ import { biliRequest, biliConfig } from '../../src'
 import { isSignedIn } from '../../src/util'
 import { config as env } from 'dotenv-flow'
 import getUrl from '../../src/client/getUrl'
-import { decode } from '../../src/protobuf/parser'
 
 chai.use(chaiAsPromised)
 const { expect } = chai
@@ -64,29 +63,6 @@ describe('Basic tests', () => {
             expect(e).to.have.property('code').to.equal(0)
         })
     }).timeout(15000)
-})
-
-describe('Unit tests', () => {
-    it('gets following', async () => {
-        const memberFollowing = await biliRequest((api) => api.memberFollowing, { vmid: 2571249 })
-        expect(memberFollowing.data?.list).to.be.an('array')
-    })
-    it('gets danmu', async () => {
-        const videoDanmu = await biliRequest((api) => api.videoDanmakuRaw, { oid: 297324635 })
-        console.log(videoDanmu)
-        decode(videoDanmu)
-        expect('').to.not.equal(undefined)
-    })
-    it('works', async () => {
-        // const aid = [...Array(100)].map((v) => Math.floor(Math.random() * 1e8))
-        // const getData = async () =>
-        //     Promise.all(
-        //         aid.map(async (v) => {
-        //             return await biliRequest((api) => api.bvid, { vid: v })
-        //         })
-        //     )
-        // const bvid = await getData()
-    })
 })
 
 describe('Interaction tests', () => {
