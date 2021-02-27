@@ -3,6 +3,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { biliRequest, isSignedIn, biliConfig } from '../../src'
 import { config as env } from 'dotenv-flow'
 import getUrl from '../../src/client/getUrl'
+import { decode } from '../../src/protobuf/parser'
 
 chai.use(chaiAsPromised)
 const { expect } = chai
@@ -18,6 +19,9 @@ const videoBvid = {
 }
 const videoAid = {
     vid: 2233, //[初音ミクと 巡音ルカと メグポイド] 千年の雪
+}
+const video4K = {
+    vid: 'BV1GX4y157vZ',
 }
 const videoInvalid = {
     vid: 0,
@@ -40,12 +44,9 @@ describe('Basic tests', () => {
         expect(info).to.have.property('code').to.equal(0)
     })
     it('can access membership api', async () => {
-        const [memberInfo, memberName] = await biliRequest(
-            (api) => [api.memberInfo, api.memberName],
-            member
-        )
+        const [memberInfo, uname] = await biliRequest((api) => [api.memberInfo, api.uname], member)
         expect(memberInfo).to.be.an('object').to.have.property('code').to.equal(0)
-        expect(memberName).to.be.an('string').to.equal('saber酱')
+        expect(uname).to.be.an('string').to.equal('saber酱')
     })
     it('can access video api', async () => {
         const [videoInfo, videoTitle] = await biliRequest(
@@ -56,7 +57,7 @@ describe('Basic tests', () => {
         expect(videoTitle).to.be.an('string').to.equal('放学后的Pleiades 四夜全【TD】')
     })
     it('can chain api', async () => {
-        const videoStream = await biliRequest(({ videoStream }) => videoStream, videoAid)
+        const videoStream = await biliRequest(({ videoStream }) => videoStream, video4K)
         expect(videoStream).to.be.an('array')
         videoStream.forEach((e) => {
             expect(e).to.have.property('code').to.equal(0)
@@ -64,14 +65,27 @@ describe('Basic tests', () => {
     }).timeout(15000)
 })
 
-describe('All api test', () => {
+describe('Unit tests', () => {
+    it('gets following', async () => {
+        const memberFollowing = await biliRequest((api) => api.memberFollowing, { vmid: 2571249 })
+        expect(memberFollowing.data?.list).to.be.an('array')
+    })
+    it('gets danmu', async () => {
+        const videoDanmu = await biliRequest((api) => api.videoDanmu, { oid: 48582778 })
+        console.log(videoDanmu)
+        console.log(await decode(videoDanmu))
+        expect(videoDanmu).to.not.equal(undefined)
+    })
     it('works', async () => {
-        const all = await biliRequest((api) => Object.values(api), {
-            ...videoInvalid,
-            ...memberInvalid,
-        })
-        expect(all).to.be.an('array')
-    }).timeout(50000)
+        // const aid = [...Array(100)].map((v) => Math.floor(Math.random() * 1e8))
+        // const getData = async () =>
+        //     Promise.all(
+        //         aid.map(async (v) => {
+        //             return await biliRequest((api) => api.bvid, { vid: v })
+        //         })
+        //     )
+        // const bvid = await getData()
+    })
 })
 
 describe('Interaction tests', () => {
