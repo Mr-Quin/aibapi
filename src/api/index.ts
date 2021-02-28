@@ -61,7 +61,7 @@ export type ApiAcceptedReturns = Arrayable<GeneralResponse | Data | string | num
 export type ApiReturns = { [k in ApiKeys]: ExtractGeneric<ApiList[k]> }
 
 export type VideoAcceptQuality = 6 | 16 | 32 | 64 | 74 | 80 | 112 | 116 | 120 | 208
-export type ParamRequirement = Array<string | string[]>
+export type PayloadRequirement = Array<string | string[]>
 export type Data = Record<string | symbol | number, any>
 
 export interface GeneralResponse {

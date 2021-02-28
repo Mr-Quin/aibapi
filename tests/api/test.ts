@@ -30,19 +30,12 @@ const memberInvalid = {
     mid: 0,
 }
 
+// sign in, pulls credential from env
 env()
 const { SESSDATA, bili_jct } = process.env
-
-// sign in
 biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
 
 describe('Basic tests', () => {
-    // requires auth, don't put credentials into code
-    it('can sign in', async () => {
-        const info = await biliRequest((api) => api.myInfo)
-        expect(isSignedIn()).to.equal(true)
-        expect(info).to.have.property('code').to.equal(0)
-    })
     it('can access membership api', async () => {
         const [memberInfo, uname] = await biliRequest((api) => [api.memberInfo, api.uname], member)
         expect(memberInfo).to.be.an('object').to.have.property('code').to.equal(0)
@@ -65,38 +58,22 @@ describe('Basic tests', () => {
     }).timeout(15000)
 })
 
-describe('Interaction tests', () => {
-    it('can like videos', async () => {
-        const like = await biliRequest(({ like }) => like, videoBvid)
-        expect(like).to.have.property('code').to.be.an('number')
-    })
-    it('can coin videos', async () => {
-        const coin = await biliRequest(({ coin }) => coin, videoBvid)
-        expect(coin).to.have.property('code').to.be.an('number')
-    })
-    it('can triple combo', async () => {
-        const triple = await biliRequest(({ triple }) => triple, videoBvid)
-        expect(triple).to.have.property('code').to.be.an('number')
-    })
-})
-
 describe('Error tests', () => {
-    it('rejects missing parameters', async () => {
-        // const a = await biliRequest(({ videoInfo }) => videoInfo)
+    it('biliRequest rejects if missing parameters', async () => {
         await expect(biliRequest(({ videoInfo }) => videoInfo)).to.eventually.be.rejectedWith(
             'Missing parameters. Expected aid,bvid, got {}'
         )
     })
-    it('rejects anything other than 200 response code', async () => {
+    it('getUrl rejects if not 200 status code', async () => {
         await expect(
-            getUrl('http://api.bilibili.com/x/web-interface/view/v')()
+            getUrl('http://api.bilibili.com/x/web-interface/view/pageDoesNotExist')()
         ).to.eventually.be.rejectedWith('Response code 404 (Not Found)')
     })
     it('rejects undefined api', async () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         await expect(biliRequest((api) => api.non)).to.eventually.be.rejectedWith(
-            'Invalid api, api is undefined'
+            'Invalid api "undefined"'
         )
     })
 })

@@ -2,25 +2,24 @@ import getUrl from '../client/getUrl'
 import { mapSeries } from 'async'
 import Api from './Api'
 import { MemberInfoResponse, SpaceSearchResponse, VideoInfoResponse, VlistEntity } from './index'
+import { checkResponse } from '../helper'
 
 export default {
     memberInfo: new Api<MemberInfoResponse>('memberInfo', {
         method: 'get',
         require: ['mid'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
         action: async (payload, options) => {
-            return getUrl('https://api.bilibili.com/x/space/acc/info', options)(payload)
+            const res = await getUrl<MemberInfoResponse>(
+                'https://api.bilibili.com/x/space/acc/info',
+                options
+            )(payload)
+            return checkResponse(res)
         },
     }),
     memberSubmissions: new Api<SpaceSearchResponse>('memberSubmissions', {
         method: 'get',
         require: ['mid'],
         optional: ['pn', 'ps'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
         action: (payload, options) => {
             const defaultPayload = {
                 pn: 1,
@@ -37,9 +36,6 @@ export default {
         require: ['mid'],
         optional: ['pn', 'ps'],
         parents: ['spacePageCount'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
         action: async (payload, options) => {
             return mapSeries([...Array(payload.spacePageCount).keys()], async (i) => {
                 return await getUrl(

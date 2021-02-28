@@ -16,31 +16,29 @@ export type UrlOption = {
     }
 }
 
-const getUrl = (url: string, options: UrlOption = {}) => async (searchParams: Data = {}) => {
+const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOption = {}) => async (
+    searchParams: Data = {}
+) => {
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
     const responseType = options.responseType === 'raw' ? undefined : 'json'
-
     await sleep(delay)
     const response = await got[method](url, {
-        headers: {
-            ...headers,
-        },
-        searchParams: {
-            ...searchParams,
-        },
+        headers,
+        searchParams,
         responseType,
     })
     response.on('error', (err) => {
-        throw new Error(`Fetch ${response.url} failed. ${err}`)
+        throw err
     })
     if (response.statusCode !== 200) {
         throw new Error(
             `Fetch ${response.url} failed. Status: ${response.statusCode} ${response.statusMessage}`
         )
     }
-    return responseType === 'json' ? response.body : response.rawBody
+    const biliStatusCode = response.headers['bili-status-code']
+    return (responseType === 'json' ? response.body : response.rawBody) as T
 }
 
 export default getUrl

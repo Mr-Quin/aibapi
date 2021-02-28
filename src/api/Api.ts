@@ -9,6 +9,8 @@ interface ApiConfig {
     optional?: Arrayable<Arrayable<string>>
     parents?: ApiKeyMaster[]
     headers?: Partial<UrlOption['headers']>
+    defaultPayload?: Data
+    format?: (payload: Data) => Data
     action: (payload: any, options?: Partial<UrlOption>) => any
 }
 
@@ -19,18 +21,25 @@ export default class Api<T extends ApiAcceptedReturns> {
     readonly optional: ApiConfig['optional']
     readonly parents: ApiConfig['parents']
     readonly headers: ApiConfig['headers']
+    readonly defaultPayload: ApiConfig['defaultPayload']
+    private readonly shaper: ApiConfig['format']
     private readonly callback: ApiConfig['action']
 
     constructor(name: ApiKeyMaster, config: ApiConfig) {
         this.name = name
         this.method = config.method ?? 'get'
-        this.require = config.require ?? []
-        this.optional = config.optional ?? []
-        this.parents = config.parents ?? []
-        this.headers = config.headers ?? {}
-        this.callback = config.action
+        this.require = config.require ?? [] // required keys, will throw error if not present. [[a,b],c] means "c and one of a or b"
+        this.optional = config.optional ?? [] // optional keys, default values will be used if not present
+        this.parents = config.parents ?? [] // parent API (node) to be called before
+        this.headers = config.headers ?? {} // headers to be passed into http request
+        this.defaultPayload = config.defaultPayload ?? {}
+        this.shaper = config.format // modifies the payload before checks and filters
+        this.callback = config.action // what to do with the payload
     }
-
+    format = (payload: Data) => {
+        if (this.shaper) return this.shaper(payload)
+        return payload
+    }
     get = (option?: Partial<UrlOption>) => async (payload: Data): Promise<T> => {
         return this.callback(payload, option)
     }

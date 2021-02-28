@@ -2,55 +2,48 @@ import { generateReferer, parseParamsVid } from '../../src/helper'
 import { expect } from 'chai'
 import { av2bv, bv2av } from '../../src/helper'
 
-const videoMixed = {
+const mixedId = {
     vid: 'BV1bW411t73v',
     bvid: 'BV1bW411t73v',
     aid: 17577699,
-    avid: 'av17577699',
+    randomProp: 'randomValue',
 }
 
-describe('Params parser tests', () => {
+describe('Vid parser tests', () => {
     it('handles empty vid', () => {
         const result = parseParamsVid({})
         expect(result).to.deep.equal({})
     })
-    it('returns aid', () => {
+    it('handles aid', () => {
         const result = parseParamsVid({ vid: 2233 })
-        expect(result).to.have.property('aid').to.equal('2233')
-        expect(result).to.have.property('avid').to.equal('2233')
+        expect(result).to.have.property('aid').to.equal(2233)
     })
-    it('returns bvid', () => {
+    it('handles bvid', () => {
         const result = parseParamsVid({ vid: 'BV1xx411c7ub' })
         expect(result).to.have.property('bvid').to.equal('BV1xx411c7ub')
     })
-    it('handles mixed ids', () => {
-        const result = parseParamsVid(videoMixed)
-        expect(result).to.deep.equal(videoMixed)
+    it('skips if given aid or bvid', () => {
+        const result = parseParamsVid({ vid: 'invalid', bvid: 'BV1xx411c7ub', aid: 1 })
+        expect(result).to.have.property('bvid').to.equal('BV1xx411c7ub')
+        expect(result).to.have.property('aid').to.equal(1)
+    })
+    it('does not modify other properties', () => {
+        const result = parseParamsVid(mixedId)
+        expect(result).to.deep.equal(mixedId)
+    })
+    it('throws if invalid vid', () => {
+        const fn1 = () => parseParamsVid({ vid: 'invalid' })
+        const fn2 = () => parseParamsVid({ vid: '' })
+        const fn3 = () => parseParamsVid({ vid: null })
+        const fn4 = () => parseParamsVid({ vid: [] })
+        const fn5 = () => parseParamsVid({ vid: {} })
+        expect(fn1).to.throw(TypeError)
+        expect(fn2).to.throw(TypeError)
+        expect(fn3).to.throw(TypeError)
+        expect(fn4).to.throw(TypeError)
+        expect(fn5).to.throw(TypeError)
     })
 })
-
-// describe('Referer maker tests', () => {
-//     it('works with bvid', () => {
-//         const result = generateReferer({ bvid: 'BV1xx411c7ub' })
-//         expect(result).to.equal('https://www.bilibili.com/video/BV1xx411c7ub')
-//     })
-//     it('works with aid', () => {
-//         const result = generateReferer({ aid: '2233' })
-//         expect(result).to.equal('https://www.bilibili.com/video/av2233')
-//     })
-//     it('works with mid', () => {
-//         const result = generateReferer({ mid: '79' })
-//         expect(result).to.equal('https://space.bilibili.com/79')
-//     })
-//     it('works with random props', () => {
-//         const result = generateReferer({ a: 1, b: null, c: '', d: undefined })
-//         expect(result).to.equal(null)
-//     })
-//     it('works without ids', () => {
-//         const result = generateReferer({})
-//         expect(result).to.deep.equal(null)
-//     })
-// })
 
 const bvav = {
     BV11b41177a6: 47095838,
@@ -125,19 +118,53 @@ const bvav = {
 }
 
 describe('Av Bv converter tests', () => {
+    it('bv2av should throw range error if an invalid aid is generated', () => {
+        const fn = () => bv2av('BV18E4o1k7UR')
+        expect(fn).to.throw(RangeError)
+    })
+    it('bv2av should throw type error for invalid bvid', () => {
+        const fn = () => bv2av('bv18E4o1k7UR')
+        expect(fn).to.throw(TypeError)
+    })
+    it('av2bv should throw range error for negative aid', () => {
+        const fn = () => av2bv(-1)
+        expect(fn).to.throw(RangeError)
+    })
     it('can encode and decode', () => {
         const before = [...Array(5000)].map(() => Math.floor(Math.random() * 1e10))
-        const after = before.map((v) => av2bv(v)).map((v) => bv2av(v))
+        const middle = before.map((v) => av2bv(v))
+        const after = middle.map((v) => bv2av(v))
         expect(after).to.be.deep.equal(before)
     })
-
     it('decodes correctly', () => {
         const results = Object.keys(bvav).map((bv) => bv2av(bv))
         expect(results).to.deep.equal(Object.values(bvav))
     })
-
     it('encodes correctly', () => {
         const results = Object.values(bvav).map((av) => av2bv(av))
         expect(results).to.deep.equal(Object.keys(bvav))
     })
 })
+
+// describe('Referer maker tests', () => {
+//     it('works with bvid', () => {
+//         const result = generateReferer({ bvid: 'BV1xx411c7ub' })
+//         expect(result).to.equal('https://www.bilibili.com/video/BV1xx411c7ub')
+//     })
+//     it('works with aid', () => {
+//         const result = generateReferer({ aid: '2233' })
+//         expect(result).to.equal('https://www.bilibili.com/video/av2233')
+//     })
+//     it('works with mid', () => {
+//         const result = generateReferer({ mid: '79' })
+//         expect(result).to.equal('https://space.bilibili.com/79')
+//     })
+//     it('works with random props', () => {
+//         const result = generateReferer({ a: 1, b: null, c: '', d: undefined })
+//         expect(result).to.equal(null)
+//     })
+//     it('works without ids', () => {
+//         const result = generateReferer({})
+//         expect(result).to.deep.equal(null)
+//     })
+// })
