@@ -1,18 +1,22 @@
 import { sleep } from '../utils'
 import got from 'got'
 import { Data, GeneralResponse } from '../api'
+import axios from 'axios'
 
 export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
     abort?: boolean
-    responseType?: 'json' | 'raw'
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined
     headers?: {
+        'Accept-Encoding'?: string
+        'User-Agent'?: string
+        Accept?: string
+        Connection?: string
         Cookie?: string
         Host?: string
         Origin?: string
         Referer?: string
-        'User-Agent'?: string
     }
 }
 
@@ -22,23 +26,56 @@ const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOpt
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
-    const responseType = options.responseType === 'raw' ? undefined : 'json'
+    const responseType = options.responseType ?? 'json'
     await sleep(delay)
-    const response = await got[method](url, {
+
+    axios.interceptors.request.use(
+        function (config) {
+            // console.log(config)
+            console.log('request success')
+            return config
+        },
+        function (error) {
+            // Do something with request error
+            // console.log(error)
+            console.log('request failed')
+            return Promise.reject(error)
+        }
+    )
+
+    axios.interceptors.response.use(
+        function (response) {
+            // Any status code that lie within the range of 2xx cause this function to trigger
+            // Do something with response data
+            console.log('response success')
+            return response
+        },
+        function (error) {
+            // Any status codes that falls outside the range of 2xx cause this function to trigger
+            // Do something with response error
+            console.log(error)
+            console.log('response failed')
+            return Promise.reject(error)
+        }
+    )
+
+    const response = await axios(url, {
+        method,
         headers,
-        searchParams,
+        params: searchParams,
         responseType,
+        decompress: false,
     })
-    response.on('error', (err) => {
-        throw err
-    })
-    if (response.statusCode !== 200) {
+    // response.on('error', (err) => {
+    //     throw err
+    // })
+    if (response.status !== 200) {
         throw new Error(
-            `Fetch ${response.url} failed. Status: ${response.statusCode} ${response.statusMessage}`
+            `Fetch ${response.request} failed. Status: ${response.status} ${response.statusText}`
         )
     }
     const biliStatusCode = response.headers['bili-status-code']
-    return (responseType === 'json' ? response.body : response.rawBody) as T
+    return response.data as T
 }
 
 export default getUrl
