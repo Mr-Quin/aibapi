@@ -12,7 +12,7 @@ export class BiliRequestError extends Error {
 }
 
 export const checkResponse = <T extends GeneralResponse>(response: T) => {
-    if (response.code !== 0 && biliStore.getState().shouldThrow) {
+    if (response.code !== 0 && biliStore.getState().throw) {
         throw new BiliRequestError(response)
     }
     return response

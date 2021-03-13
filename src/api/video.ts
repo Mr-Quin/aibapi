@@ -26,24 +26,25 @@ export default {
     }),
     videoStream: new Api<VideoStreamResponse[]>('videoStream', {
         method: 'get',
-        require: [['avid', 'bvid']], // not a typo. avid === aid, a number
+        require: [['avid', 'bvid']], // avid === aid
         parents: ['cid'],
         optional: ['type', 'platform', 'high_quality', 'qn', 'fourk', 'fnval'],
         format: (payload) => {
-            const p = isSignedIn()
+            const defaultPayload = isSignedIn()
                 ? { qn: 120, fourk: 1, fnval: 0 }
                 : {
                       type: 'mp4',
                       platform: 'html5',
                       high_quality: 1,
                   }
-            if (payload['aid'] !== undefined) {
-                return { ...p, ...payload, avid: payload['aid'] }
+            const aid = payload['aid']
+            if (aid !== undefined) {
+                return { ...defaultPayload, ...payload, avid: aid }
             }
-            return { ...p, ...payload }
+            return { ...defaultPayload, ...payload }
         },
         action: async (payload, options) => {
-            const cids = Array.isArray(payload.cid) ? payload.cid : [payload.cid]
+            const cids = [payload['cid']].flat()
             return mapSeries(cids, async (cid: string) => {
                 return getUrl(
                     'https://api.bilibili.com/x/player/playurl',
@@ -105,25 +106,27 @@ export default {
         },
     }),
     videoTitle: new Api<string>('videoTitle', {
-        method: 'get',
         parents: ['videoInfo'],
         action: ({ videoInfo }: { videoInfo: VideoInfoResponse }) => videoInfo.data?.title,
     }),
     aid: new Api<number>('aid', {
-        method: 'get',
         require: ['bvid'],
         action: ({ bvid }: { bvid: string }) => bv2av(bvid),
     }),
     bvid: new Api<number>('bvid', {
-        method: 'get',
         require: ['aid'],
         action: ({ aid }: { aid: number | bigint }) => av2bv(aid),
     }),
     cid: new Api<number[]>('cid', {
-        method: 'get',
         parents: ['videoInfo'],
         action: ({ videoInfo }: { videoInfo: VideoInfoResponse }) => {
-            return videoInfo.data ? videoInfo.data.pages.map((page) => page.cid) : null
+            return videoInfo.data ? videoInfo.data.pages.map((page) => page.cid) : []
+        },
+    }),
+    oid: new Api<number[]>('cid', {
+        parents: ['cid'],
+        action: ({ cid }: { cid: number[] }) => {
+            return cid
         },
     }),
 }

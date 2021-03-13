@@ -13,7 +13,7 @@ export type BiliOptions = {
     requestDelay: number
     origin: string
     referer: string
-    shouldThrow: boolean
+    throw: boolean
 }
 
 const biliStore = create<BiliCredential & BiliOptions>(() => ({
@@ -27,7 +27,7 @@ const biliStore = create<BiliCredential & BiliOptions>(() => ({
     requestDelay: 250,
     origin: 'https://www.bilibili.com',
     referer: 'https://www.bilibili.com',
-    shouldThrow: false,
+    throw: false,
 }))
 
 export default biliStore

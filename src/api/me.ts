@@ -1,50 +1,69 @@
 import Api from './Api'
 import { MemberFollowingResponse, MyInfoResponse } from './index'
 import getUrl from '../client/getUrl'
+import { mapSeries } from 'async'
+import * as zlib from 'zlib'
 
 export default {
     myInfo: new Api<MyInfoResponse>('myInfo', {
-        method: 'get',
         action: async (payload, options) => {
             return await getUrl('http://api.bilibili.com/x/member/web/account', options)(payload)
         },
     }),
     memberFollowing: new Api<MemberFollowingResponse>('memberFollowing', {
-        method: 'get',
         require: ['vmid'],
         optional: ['order_type', 'ps', 'pn'],
         action: async (payload, options) => {
             return await getUrl('http://api.bilibili.com/x/relation/followings', options)(payload)
         },
     }),
-    videoDanmakuRaw: new Api<Buffer>('videoDanmakuRaw', {
-        method: 'get',
-        require: ['oid'],
-        optional: ['pid', 'segment_index', 'type'],
+    myFollowings: new Api<MemberFollowingResponse>('memberFollowing', {
+        parents: ['myInfo'],
+        optional: ['order_type', 'ps', 'pn'],
         action: async (payload, options) => {
-            const defaultPayload = {
-                type: 1,
-                segment_index: 1,
-            }
-            return await getUrl<Buffer>('http://api.bilibili.com/x/v2/dm/web/seg.so', {
-                ...options,
-                responseType: 'raw',
-            })({ ...defaultPayload, ...payload })
+            const myInfo: MyInfoResponse = payload['myInfo']
+            const vmid = myInfo.data?.mid
+            return await getUrl(
+                'http://api.bilibili.com/x/relation/followings',
+                options
+            )({ vmid, ps: 100, ...payload })
         },
     }),
-    videoDanmakuXml: new Api<Buffer>('videoDanmakuXml', {
-        method: 'get',
-        require: ['oid'],
+    videoDanmakuProto: new Api<Buffer[]>('videoDanmakuProto', {
         optional: ['pid', 'segment_index', 'type'],
-        action: async (payload, options) => {
+        parents: ['oid'],
+        format: (payload) => {
             const defaultPayload = {
                 type: 1,
                 segment_index: 1,
             }
-            return await getUrl('http://api.bilibili.com/x/v2/dm/web/seg.so', {
-                ...options,
-                responseType: 'raw',
-            })({ ...defaultPayload, ...payload })
+            return { ...defaultPayload, ...payload }
+        },
+        action: async (payload, options) => {
+            const oidList: number[] = [payload['oid']].flat()
+            return mapSeries(oidList, async (oid) => {
+                const p = { ...payload, oid }
+                delete p.cid
+                return await getUrl<Buffer>('https://api.bilibili.com/x/v2/dm/web/seg.so', {
+                    ...options,
+                    responseType: 'arraybuffer',
+                })(p)
+            })
+        },
+    }),
+    videoDanmakuXml: new Api<string[]>('videoDanmakuXml', {
+        parents: ['oid'],
+        action: async (payload, options) => {
+            const oidList: number[] = [payload['oid']].flat()
+            const compressed: Buffer[] = await mapSeries(oidList, async (oid) => {
+                const p = { ...payload, oid }
+                return await getUrl(`https://api.bilibili.com/x/v1/dm/list.so`, {
+                    ...options,
+                    responseType: 'arraybuffer',
+                    decompress: false,
+                })(p)
+            })
+            return compressed.map((buffer) => zlib.inflateRawSync(buffer).toString())
         },
     }),
 }

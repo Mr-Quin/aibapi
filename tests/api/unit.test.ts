@@ -5,6 +5,8 @@ import chaiAsPromised from 'chai-as-promised'
 import biliStore from '../../src/store'
 import { BiliRequestError } from '../../src/helper'
 import { isSignedIn } from '../../src/util'
+import { bilibili } from '../../src/protobuf/js/dm'
+import DmSegMobileReply = bilibili.community.service.dm.v1.DmSegMobileReply
 
 chai.use(chaiAsPromised)
 const { expect } = chai
@@ -20,7 +22,7 @@ const video2 = {
     aid: 801939815,
     bvid: 'BV14y4y177bP',
     title: '从开工厂到建戴森球指南—《异星工厂》《戴森球计划》鉴赏【就知道玩游戏128】',
-    cid: 303812150,
+    cid: [303812150],
 }
 
 const videoUndefined = {
@@ -44,7 +46,7 @@ describe('Unit tests', () => {
         biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
     })
     afterEach('reset global error configuration to not throw', () => {
-        biliStore.setState({ shouldThrow: false })
+        biliStore.setState({ throw: false })
     })
     it('can sign in', async () => {
         const info = await biliRequest((api) => api.myInfo)
@@ -63,6 +65,13 @@ describe('Unit tests', () => {
         }).timeout(50)
     })
 
+    describe('Cid tests', () => {
+        it('gets cid from vid', async () => {
+            const cid = await biliRequest((api) => api.cid, { vid: video2.bvid })
+            expect(cid).to.deep.eq(video2.cid)
+        })
+    })
+
     describe('Bvid tests', () => {
         it('converts bvid locally', async () => {
             const bvid = await biliRequest((api) => api.bvid, { vid: video2.aid })
@@ -79,7 +88,7 @@ describe('Unit tests', () => {
             const info1 = await biliRequest((api) => api.videoInfo, { vid: video2.aid })
             const info2 = await biliRequest((api) => api.videoInfo, { vid: video2.bvid })
             expect(info1).to.have.property('data').to.be.an('object')
-            expect(info1.data?.cid).to.eq(info2.data?.cid).to.eq(video2.cid)
+            expect(info1.data?.cid).to.eq(info2.data?.cid)
         }).timeout(5000)
         it('returns code -400 for invalid vid', async () => {
             const info = await biliRequest((api) => api.videoInfo, { vid: videoUndefined.aid })
@@ -158,10 +167,35 @@ describe('Unit tests', () => {
         })
     })
 
-    describe('Danmaku tests', () => {
-        it('works', async () => {
-            const d = await biliRequest((api) => api.videoDanmakuRaw, { oid: video1.cid })
+    describe('MyInfo tests', () => {
+        it('tries to get my info', async () => {
+            const myInfo = await biliRequest((api) => api.myInfo)
+            expect(myInfo).to.have.property('code').to.be.a('number')
         })
+        it('tries to get my following', async () => {
+            const followings = await biliRequest((api) => api.myFollowings)
+            console.log(followings.data)
+            console.log(followings.data?.list.length)
+        })
+    })
+
+    describe('Danmaku tests', () => {
+        it('proto works', async () => {
+            const buffer = await biliRequest((api) => api.videoDanmakuProto, { oid: video2.cid })
+            expect(buffer).to.be.an('array')
+            buffer.forEach((b) => {
+                expect(b).to.be.instanceOf(Buffer)
+                expect(DmSegMobileReply.verify(b)).to.be.null
+                expect(DmSegMobileReply.decode(b)).to.have.property('elems')
+            })
+        }).timeout(10000)
+        it('xml works', async () => {
+            const xml = await biliRequest((api) => api.videoDanmakuXml, { oid: video2.cid })
+            expect(xml).to.be.an('array')
+            xml.forEach((s) => {
+                expect(s.startsWith('<?xml version="1.0"')).to.be.true
+            })
+        }).timeout(10000)
     })
 
     describe('Interaction tests', () => {

@@ -7,6 +7,7 @@ export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
     abort?: boolean
+    decompress?: boolean
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined
     headers?: {
         'Accept-Encoding'?: string
@@ -23,48 +24,19 @@ export type UrlOption = {
 const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOption = {}) => async (
     searchParams: Data = {}
 ) => {
+    const decompress = options.decompress ?? true
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
     const responseType = options.responseType ?? 'json'
     await sleep(delay)
 
-    axios.interceptors.request.use(
-        function (config) {
-            // console.log(config)
-            console.log('request success')
-            return config
-        },
-        function (error) {
-            // Do something with request error
-            // console.log(error)
-            console.log('request failed')
-            return Promise.reject(error)
-        }
-    )
-
-    axios.interceptors.response.use(
-        function (response) {
-            // Any status code that lie within the range of 2xx cause this function to trigger
-            // Do something with response data
-            console.log('response success')
-            return response
-        },
-        function (error) {
-            // Any status codes that falls outside the range of 2xx cause this function to trigger
-            // Do something with response error
-            console.log(error)
-            console.log('response failed')
-            return Promise.reject(error)
-        }
-    )
-
     const response = await axios(url, {
         method,
         headers,
         params: searchParams,
         responseType,
-        decompress: false,
+        decompress,
     })
     // response.on('error', (err) => {
     //     throw err

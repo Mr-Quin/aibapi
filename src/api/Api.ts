@@ -4,7 +4,7 @@ import { ApiAcceptedReturns, ApiKeyMaster, Arrayable, Data } from './index'
 type RequestMethod = 'get' | 'post'
 
 interface ApiConfig {
-    method: RequestMethod
+    method?: RequestMethod
     require?: Arrayable<Arrayable<string>>
     optional?: Arrayable<Arrayable<string>>
     parents?: ApiKeyMaster[]
@@ -23,7 +23,7 @@ export default class Api<T extends ApiAcceptedReturns> {
     readonly headers: ApiConfig['headers']
     readonly defaultPayload: ApiConfig['defaultPayload']
     private readonly shaper: ApiConfig['format']
-    private readonly callback: ApiConfig['action']
+    private readonly action: ApiConfig['action']
 
     constructor(name: ApiKeyMaster, config: ApiConfig) {
         this.name = name
@@ -34,13 +34,13 @@ export default class Api<T extends ApiAcceptedReturns> {
         this.headers = config.headers ?? {} // headers to be passed into http request
         this.defaultPayload = config.defaultPayload ?? {}
         this.shaper = config.format // modifies the payload before checks and filters
-        this.callback = config.action // what to do with the payload
+        this.action = config.action // what to do with the payload
     }
     format = (payload: Data) => {
         if (this.shaper) return this.shaper(payload)
         return payload
     }
     get = (option?: Partial<UrlOption>) => async (payload: Data): Promise<T> => {
-        return this.callback(payload, option)
+        return this.action(payload, option)
     }
 }

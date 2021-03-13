@@ -67,7 +67,7 @@ describe('Error tests', () => {
     it('getUrl rejects if not 200 status code', async () => {
         await expect(
             getUrl('http://api.bilibili.com/x/web-interface/view/pageDoesNotExist')()
-        ).to.eventually.be.rejectedWith('Response code 404 (Not Found)')
+        ).to.eventually.be.rejectedWith('Request failed with status code 404')
     })
     it('rejects undefined api', async () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
