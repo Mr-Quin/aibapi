@@ -16,7 +16,6 @@ import { biliRequest } from "@mr-quin/bilibili-api";
 ```
 To get the uname of a member
 ```typescript
-// the syntax is biliRequest(selector[, params])
 const name = await biliRequest((api) => api.uname, { mid: 79 })
 console.log(name) //saber酱
 ```
@@ -27,7 +26,7 @@ const [title, streams] = await biliRequest((api) => [api.videoTitle, api.videoSt
 console.log(title) //[初音ミクと 巡音ルカと メグポイド] 千年の雪
 console.log(streams[0].data.durl[0].url) //https://upos-hz-mirrorakam.akamaized.net/upgcxcode....
 ```
-###biliRequest(selector[,searchParams])
+### biliRequest(selector[,searchParams])
 
 The selector function should return one, or an array of APIs from the list of available APIs. Doing this allows for type inference.
 
