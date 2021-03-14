@@ -10,23 +10,20 @@ import {
     VideoStreamResponse,
 } from './index'
 import { av2bv, bv2av, isSignedIn } from '../util'
-import { checkResponse } from '../helper'
 
 export default {
     videoInfo: new Api<VideoInfoResponse>('videoInfo', {
-        method: 'get',
         require: [['aid', 'bvid']],
         action: async (payload, options) => {
             const res = await getUrl<VideoInfoResponse>(
                 'https://api.bilibili.com/x/web-interface/view',
                 options
             )(payload)
-            return checkResponse(res)
+            return res
         },
     }),
     videoStream: new Api<VideoStreamResponse[]>('videoStream', {
-        method: 'get',
-        require: [['avid', 'bvid']], // avid === aid
+        require: [['avid', 'bvid']],
         parents: ['cid'],
         optional: ['type', 'platform', 'high_quality', 'qn', 'fourk', 'fnval'],
         format: (payload) => {
@@ -40,12 +37,13 @@ export default {
             const aid = payload['aid']
             if (aid !== undefined) {
                 return { ...defaultPayload, ...payload, avid: aid }
+            } else {
+                return { ...defaultPayload, ...payload }
             }
-            return { ...defaultPayload, ...payload }
         },
         action: async (payload, options) => {
-            const cids = [payload['cid']].flat()
-            return mapSeries(cids, async (cid: string) => {
+            const cidList = [payload['cid']].flat()
+            return mapSeries(cidList, async (cid: string) => {
                 return getUrl(
                     'https://api.bilibili.com/x/player/playurl',
                     options
@@ -60,49 +58,40 @@ export default {
         method: 'post',
         require: [['aid', 'bvid']],
         optional: ['like'],
+        intercept: (payload) => ({
+            csrf: biliStore.getState().bili_jct,
+            ...payload,
+        }),
+        format: (payload) => ({ like: 1, ...payload }),
         action: async (payload, options) => {
-            const defaultPayload = {
-                like: 1,
-                csrf: biliStore.getState().bili_jct,
-            }
-            return getUrl(
-                'http://api.bilibili.com/x/web-interface/archive/like',
-                options
-            )({ ...defaultPayload, ...payload })
+            return getUrl('http://api.bilibili.com/x/web-interface/archive/like', options)(payload)
         },
     }),
     coin: new Api<CoinResponse>('coin', {
         method: 'post',
         require: [['aid', 'bvid']],
         optional: ['multiply', 'like'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
+        intercept: (payload) => ({
+            csrf: biliStore.getState().bili_jct,
+            ...payload,
+        }),
+        format: (payload) => ({ multiply: 1, ...payload }),
         action: async (payload, options) => {
-            const defaultPayload = {
-                multiply: 1,
-                csrf: biliStore.getState().bili_jct,
-            }
-            return getUrl(
-                'http://api.bilibili.com/x/web-interface/coin/add',
-                options
-            )({ ...defaultPayload, ...payload })
+            return getUrl('http://api.bilibili.com/x/web-interface/coin/add', options)(payload)
         },
     }),
     triple: new Api<TripleResponse>('triple', {
         method: 'post',
         require: [['aid', 'bvid']],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
+        intercept: (payload) => ({
+            csrf: biliStore.getState().bili_jct,
+            ...payload,
+        }),
         action: async (payload, options) => {
-            const defaultPayload = {
-                csrf: biliStore.getState().bili_jct,
-            }
             return getUrl(
                 'http://api.bilibili.com/x/web-interface/archive/like/triple',
                 options
-            )({ ...defaultPayload, ...payload })
+            )(payload)
         },
     }),
     videoTitle: new Api<string>('videoTitle', {
@@ -121,12 +110,6 @@ export default {
         parents: ['videoInfo'],
         action: ({ videoInfo }: { videoInfo: VideoInfoResponse }) => {
             return videoInfo.data ? videoInfo.data.pages.map((page) => page.cid) : []
-        },
-    }),
-    oid: new Api<number[]>('cid', {
-        parents: ['cid'],
-        action: ({ cid }: { cid: number[] }) => {
-            return cid
         },
     }),
 }

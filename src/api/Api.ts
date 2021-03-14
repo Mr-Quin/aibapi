@@ -1,5 +1,6 @@
 import { UrlOption } from '../client/getUrl'
 import { ApiAcceptedReturns, ApiKeyMaster, Arrayable, Data } from './index'
+import biliStore from '../store'
 
 type RequestMethod = 'get' | 'post'
 
@@ -9,7 +10,7 @@ interface ApiConfig {
     optional?: Arrayable<Arrayable<string>>
     parents?: ApiKeyMaster[]
     headers?: Partial<UrlOption['headers']>
-    defaultPayload?: Data
+    intercept?: (payload: Data) => Data
     format?: (payload: Data) => Data
     action: (payload: any, options?: Partial<UrlOption>) => any
 }
@@ -21,9 +22,9 @@ export default class Api<T extends ApiAcceptedReturns> {
     readonly optional: ApiConfig['optional']
     readonly parents: ApiConfig['parents']
     readonly headers: ApiConfig['headers']
-    readonly defaultPayload: ApiConfig['defaultPayload']
-    private readonly shaper: ApiConfig['format']
-    private readonly action: ApiConfig['action']
+    private readonly _intercept: ApiConfig['intercept']
+    private readonly _format: ApiConfig['format']
+    private readonly _get: ApiConfig['action']
 
     constructor(name: ApiKeyMaster, config: ApiConfig) {
         this.name = name
@@ -32,15 +33,19 @@ export default class Api<T extends ApiAcceptedReturns> {
         this.optional = config.optional ?? [] // optional keys, default values will be used if not present
         this.parents = config.parents ?? [] // parent API (node) to be called before
         this.headers = config.headers ?? {} // headers to be passed into http request
-        this.defaultPayload = config.defaultPayload ?? {}
-        this.shaper = config.format // modifies the payload before checks and filters
-        this.action = config.action // what to do with the payload
+        this._intercept = config.intercept // modifies payload right before sending out the request
+        this._format = config.format // modifies the payload before checks and filters
+        this._get = config.action // what to do with the payload
+    }
+    intercept = (payload: Data) => {
+        if (this._intercept) return this._intercept(payload)
+        return payload
     }
     format = (payload: Data) => {
-        if (this.shaper) return this.shaper(payload)
+        if (this._format) return this._format(payload)
         return payload
     }
     get = (option?: Partial<UrlOption>) => async (payload: Data): Promise<T> => {
-        return this.action(payload, option)
+        return this._get(payload, option)
     }
 }

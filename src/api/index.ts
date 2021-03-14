@@ -2,17 +2,19 @@ import memberApi from './member'
 import videoApi from './video'
 import me from './me'
 import Api from './Api'
+import danmaku from './danmaku'
+import search from './search'
 
 export type ApiKeyMaster =
     | 'aid'
     | 'bvid'
     | 'cid'
-    | 'oid'
     | 'coin'
     | 'like'
     | 'memberAvatar'
+    | 'memberFollowing'
+    | 'memberFollowingPageCount'
     | 'memberInfo'
-    | 'uname'
     | 'memberSubmissionCount'
     | 'memberSubmissions'
     | 'memberSubmissionsAll'
@@ -20,21 +22,25 @@ export type ApiKeyMaster =
     | 'memberVideosAll'
     | 'memberVideosAllBvid'
     | 'mid'
-    | 'myInfo'
     | 'myFollowings'
+    | 'myInfo'
+    | 'search'
     | 'spacePageCount'
     | 'triple'
+    | 'uname'
+    | 'videoDanmakuProto'
+    | 'videoDanmakuXml'
     | 'videoInfo'
     | 'videoStream'
     | 'videoTitle'
-    | 'memberFollowing'
-    | 'videoDanmakuProto'
-    | 'videoDanmakuXml'
+    | 'vmid'
 
 const bilibiliApi = {
     ...memberApi,
     ...videoApi,
     ...me,
+    ...danmaku,
+    ...search,
 }
 
 // check if api contains all keys listed in ApiKeyMaster
@@ -355,20 +361,6 @@ export interface LiveRoom {
     roomid: number
     roundStatus: number
     broadcast_type: number
-}
-
-export interface MyInfoResponse extends GeneralResponse {
-    data?: MyInfoData
-}
-export interface MyInfoData {
-    mid: number
-    uname: string
-    userid: string
-    sign: string
-    birthday: string
-    sex: string
-    nick_free: boolean
-    rank: string
 }
 
 export interface MemberFollowingResponse extends GeneralResponse {

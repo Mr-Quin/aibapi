@@ -5,8 +5,7 @@ import chaiAsPromised from 'chai-as-promised'
 import biliStore from '../../src/store'
 import { BiliRequestError } from '../../src/helper'
 import { isSignedIn } from '../../src/util'
-import { bilibili } from '../../src/protobuf/js/dm'
-import DmSegMobileReply = bilibili.community.service.dm.v1.DmSegMobileReply
+import { decodeDanmaku } from '../../src/protobuf/js/parser'
 
 chai.use(chaiAsPromised)
 const { expect } = chai
@@ -17,14 +16,12 @@ const video1 = {
     title: '【超级小桀】2021年2月27日直播录像',
     cid: [303659129, 303667340, 303673393, 303773030, 303780120, 303786306],
 }
-
 const video2 = {
     aid: 801939815,
     bvid: 'BV14y4y177bP',
     title: '从开工厂到建戴森球指南—《异星工厂》《戴森球计划》鉴赏【就知道玩游戏128】',
     cid: [303812150],
 }
-
 const videoUndefined = {
     aid: 0,
     bvid: 'BV0000000000',
@@ -33,10 +30,10 @@ const member1 = {
     mid: 21038961,
     uname: 'MrBull0213',
 }
-
 const memberUndefined = {
     mid: 0,
 }
+const searchTerm = { keyword: '狗头人' }
 
 describe('Unit tests', () => {
     before('sign in', () => {
@@ -167,35 +164,50 @@ describe('Unit tests', () => {
         })
     })
 
+    describe('uname tests', () => {
+        it('works', async () => {
+            const name = await biliRequest((api) => api.uname, member1)
+            expect(name).to.eq(member1.uname)
+        })
+    })
+
     describe('MyInfo tests', () => {
         it('tries to get my info', async () => {
             const myInfo = await biliRequest((api) => api.myInfo)
-            expect(myInfo).to.have.property('code').to.be.a('number')
+            expect(myInfo)
+                .to.have.property('code')
+                .to.be.a('number')
+                .to.satisfy((code: number) => code === 0 || code === -101)
         })
         it('tries to get my following', async () => {
             const followings = await biliRequest((api) => api.myFollowings)
-            console.log(followings.data)
-            console.log(followings.data?.list.length)
+            expect(followings).to.have.property('code').to.be.a('number')
         })
     })
 
     describe('Danmaku tests', () => {
         it('proto works', async () => {
-            const buffer = await biliRequest((api) => api.videoDanmakuProto, { oid: video2.cid })
+            const buffer = await biliRequest((api) => api.videoDanmakuProto, { cid: video2.cid })
             expect(buffer).to.be.an('array')
             buffer.forEach((b) => {
                 expect(b).to.be.instanceOf(Buffer)
-                expect(DmSegMobileReply.verify(b)).to.be.null
-                expect(DmSegMobileReply.decode(b)).to.have.property('elems')
+                expect(decodeDanmaku(b)).to.have.property('elems')
             })
         }).timeout(10000)
         it('xml works', async () => {
-            const xml = await biliRequest((api) => api.videoDanmakuXml, { oid: video2.cid })
+            const xml = await biliRequest((api) => api.videoDanmakuXml, { cid: video2.cid })
             expect(xml).to.be.an('array')
             xml.forEach((s) => {
                 expect(s.startsWith('<?xml version="1.0"')).to.be.true
             })
         }).timeout(10000)
+    })
+
+    describe('Search tests', () => {
+        it('returns something', async () => {
+            const result = await biliRequest((api) => api.search, searchTerm)
+            expect(result).to.have.property('code').to.be.an('number').to.be.eq(0)
+        })
     })
 
     describe('Interaction tests', () => {

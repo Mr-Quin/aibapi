@@ -8,7 +8,7 @@ import { isSignedIn } from '../util'
 // TODO: implement branching
 
 export const getApiRecursive = (api: ApiValue) => async (
-    params: Data,
+    payload: Data,
     cache: Data = {}
 ): Promise<Data> => {
     if (!api) throw new TypeError(`Invalid api "${api}"`)
@@ -18,11 +18,11 @@ export const getApiRecursive = (api: ApiValue) => async (
         return cache[target]
     }
     const parent =
-        api.parents?.find((key) => Object.keys(params).includes(key)) ??
+        api.parents?.find((key) => Object.keys(payload).includes(key)) ??
         api.parents?.find((key) => Object.keys(bilibiliApi).includes(key))
     if (!parent) {
         // root
-        const result = await getApi(api, params)
+        const result = await getApi(api, payload)
         cache[target] = result
         return result
     }
@@ -30,13 +30,13 @@ export const getApiRecursive = (api: ApiValue) => async (
     if (cache[parent]) {
         return getApi(api, cache)
     } else {
-        cache[parent] = await getApiRecursive(bilibiliApi[parent])(params, cache)
+        cache[parent] = await getApiRecursive(bilibiliApi[parent])(payload, cache)
         return getApi(api, cache)
     }
 }
 
 // TODO: put all of this into Api.get()
-export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
+export const getApi = async (api: ApiValue, payload: Data): Promise<Data> => {
     const { requestDelay, SESSDATA, referer, origin } = biliStore.getState()
     const userAgent = biliStore.getState()['user-agent']
     // const referer = generateReferer(params)
@@ -50,14 +50,14 @@ export const getApi = async (api: ApiValue, params: Data): Promise<Data> => {
                 Accept: '*/*',
                 Connection: 'keep-alive',
                 Cookie: `SESSDATA=${SESSDATA}`,
-                // Host: 'api.bilibili.com',
                 Origin: origin,
                 Referer: referer,
                 ...api.headers,
             },
         }),
+        api.intercept,
         filterPayloadWith(concatArray(api.require, api.optional, api.parents)),
         checkPayloadWith(concatArray(api.require, api.parents)),
         api.format
-    )({ ...api.defaultPayload, ...params })
+    )(payload)
 }

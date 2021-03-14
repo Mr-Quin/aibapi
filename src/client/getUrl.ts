@@ -1,5 +1,4 @@
 import { sleep } from '../utils'
-import got from 'got'
 import { Data, GeneralResponse } from '../api'
 import axios from 'axios'
 
@@ -37,15 +36,15 @@ const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOpt
         params: searchParams,
         responseType,
         decompress,
+        validateStatus: (status) => status >= 200 && status < 500,
     })
-    // response.on('error', (err) => {
-    //     throw err
-    // })
-    if (response.status !== 200) {
-        throw new Error(
-            `Fetch ${response.request} failed. Status: ${response.status} ${response.statusText}`
-        )
-    }
+    // if (response.status !== 200) {
+    //     throw new Error(
+    //         `Fetch ${url} failed. Status: ${response.status} ${
+    //             response.statusText
+    //         }\nResponse body: ${JSON.stringify(response.data, null, 2)}`
+    //     )
+    // }
     const biliStatusCode = response.headers['bili-status-code']
     return response.data as T
 }
