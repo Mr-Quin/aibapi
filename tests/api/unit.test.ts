@@ -180,7 +180,7 @@ describe('Unit tests', () => {
                 .to.satisfy((code: number) => code === 0 || code === -101)
         })
         it('tries to get my following', async () => {
-            const followings = await biliRequest((api) => api.myFollowings)
+            const followings = await biliRequest((api) => api.myFollowing)
             expect(followings).to.have.property('code').to.be.a('number')
         })
     })
