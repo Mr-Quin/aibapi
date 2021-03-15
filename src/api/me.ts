@@ -8,7 +8,7 @@ export default {
             return await getUrl('http://api.bilibili.com/x/member/web/account', options)(payload)
         },
     }),
-    myFollowings: new Api<MemberFollowingResponse>('memberFollowing', {
+    myFollowing: new Api<MemberFollowingResponse>('myFollowing', {
         parents: ['myInfo'],
         optional: ['order_type', 'ps', 'pn'],
         action: async (payload, options) => {

@@ -22,7 +22,7 @@ export type ApiKeyMaster =
     | 'memberVideosAll'
     | 'memberVideosAllBvid'
     | 'mid'
-    | 'myFollowings'
+    | 'myFollowing'
     | 'myInfo'
     | 'search'
     | 'spacePageCount'
