@@ -1,0 +1,229 @@
+/*
+ * 通用的rpc统计models，与具体的业务和实现无关。
+ * 如果底层使用Quic协议，后期支持相关数据的扩展，扩展方式类似cronet engine builder。
+ * 这样减少多个sdk对于同一个事件的不同描述的成本。
+ * 本文件应该放在所有rpc库都能够看到的地方，当前为okhttp-wrapper
+ *
+ * 生产维护一个通用的model，而不是多个model。各消费平台维持一个model，而不是多个model，这样减少
+ * 2(okhttp/moss)*4(infoeyes/neuron/misaka/track)=8种 model所需要的转换成本和出错概率。
+ *
+ * Created by gongzhen on 2019-07-23
+ */
+syntax = "proto3";
+
+package bilibili.lib.rpc.track.model;
+
+option java_multiple_files = true;
+option java_package = "com.bilibili.lib.rpc.track.model";
+
+/*
+ * 数据统计 Metrics data from transport listeners, all in ms.
+ * 某些字段，例如biz，total_time是否有值取决于具体的tracker，但是字段表义是唯一的：
+ * 1. net就是网络层本身
+ * 2. biz就是业务本身
+ * 3. total_time就是这个track所统计的全部时间
+ */
+message Metrics {
+
+    // call/request start
+    int64 start = 1;
+
+    int64 dns_start = 2;
+    int64 dns_end = 3;
+    int64 dns_cost = 4;
+
+    // 实际网络连接开始
+    int64 connect_start = 5;
+    int64 tls_start = 6;
+    int64 tls_end = 7;
+    int64 tls_cost = 8;
+    int64 connect_end = 9;
+    int64 connect_cost = 10;
+
+    int64 req_start = 11;
+    int64 req_header_start = 12;
+    int64 req_header_end = 13;
+    int64 req_header_cost = 14;
+    int64 req_body_start = 15;
+    int64 req_body_end = 16;
+    int64 req_body_cost = 17;
+    int64 req_end = 18;
+    int64 req_cost = 19;
+
+    int64 resp_start = 20;
+    int64 resp_header_start = 21;
+    int64 resp_header_end = 22;
+    int64 resp_header_cost = 23;
+    int64 resp_body_start = 24;
+    int64 resp_body_end = 25;
+    int64 resp_body_cost = 26;
+    int64 resp_end = 27;
+    int64 resp_cost = 28;
+
+    int64 req_header_size = 29;
+    int64 req_body_size = 30;
+    int64 req_package_size = 31;
+
+    int64 resp_header_size = 32;
+    int64 resp_body_size = 33;
+    int64 resp_package_size = 34;
+
+    // call/request end
+    int64 end = 35;
+    int64 cost = 36;
+
+    bool socket_reuse = 37;
+    string remote_ip = 38;
+    string dns_provider = 39;
+}
+
+message Header {
+    string xcache = 1;
+    string via = 2;
+    string xcache_webcdn = 3;
+    string trace_id = 4;
+    string idc = 5;
+
+    string grpc_status = 6; // moss only
+
+    // biz code since 5.53
+    string biz_code = 24;
+}
+
+/*
+ * 网络请求事件
+ */
+message NetworkEvent {
+    string url = 1;
+    string scheme = 2; //origin scheme
+    string host = 3; // orign host
+    string path = 4; // origin path
+    string real_url = 5;
+
+    int64 request_time = 6;
+    int64 finish_time = 7;
+    int64 total_time = 8; // track定义的总时长
+
+    string method = 9;
+    string protocol = 10;
+    int32 http_code = 11;
+    Header header = 12;
+    Metrics metrics = 13;
+
+    string net_exception_name = 14;
+    string net_exception_message = 15;
+
+    // call类型，唯一的上层业务标识，imageloader未开放
+    CallType call_type = 16;
+
+    // 实现类型
+    Tunnel tunnel = 17;
+    // 唯一标识一次请求的id，仅本地有效
+    string local_rpc_trace_id = 18;
+    // 是否降级
+    bool downgrade = 19;
+    // 底层连接类型 是否为长连接（persistent connection），注意和socket_reuse的区别
+    bool persistent = 20;
+    RpcSample sample = 21;
+
+    // 只能消费一次, 防止上报多次
+    bool consumed = 22;
+
+    // chromium net only
+    CrNetError cr_net_error = 23;
+
+    // for moss only
+    string logical_url = 24;
+    string logical_scheme = 25; //logical scheme
+    string logical_host = 26; // logical host
+    string logical_path = 27; // logical path
+}
+
+/*
+ * Http 上层业务类型
+ */
+enum CallType {
+    API = 0;
+    IMAGE = 1;
+}
+
+/*
+ * Http 通道类型
+ */
+enum Tunnel {
+    OKHTTP = 0;
+    BBC_SOCKET = 1;
+    MOSS_CRONET = 2;
+    MOSS_OKHTTP = 3;
+    MOSS_DOWNGRADE_OKHTTP = 4;
+    MOSS_STREAM_CRONET = 5;
+    HTTPDNS_CHROMIUM_NET = 6;
+}
+
+/*
+ * failover only
+ */
+message RpcSample {
+    bool sample = 1;
+    float rate = 2;
+}
+
+/*
+ * chromium net 详细错误
+ */
+message CrNetError {
+    int32 error_code = 1;
+    int32 internal_error_code = 2;
+    string detail_message = 3;
+    bool retryable = 4;
+}
+
+/*
+ * 通用的业务请求事件，仅为可见的网关层服务，没有传输层统计数据(metrics)。
+ * 其中可能包含多个rpc请求，数据可以累积和上报多次。
+ *
+ * Created by gongzhen on 2019-09-06
+ */
+message BizEvent {
+    string url = 1;
+    string scheme = 2; //origin scheme
+    string host = 3; // orign host
+    string path = 4; // origin path
+    string real_url = 5;
+
+    int64 request_time = 6;
+    int64 finish_time = 7;
+    int64 total_time = 8; // 整个请求从开始到结束总消耗，包括解析时长
+
+    // resp headers, since 5.48
+    Header header = 9;
+
+    // with local trace id since 5.52
+    string local_rpc_trace_id = 10;
+
+    // moss only
+    int32 grpc_status = 11;
+    string grpc_message = 12;
+
+    // 业务code和msg，since 5.48
+    int32 biz_code = 13;
+    string biz_message = 14;
+
+    string biz_exception_name = 15;
+    string biz_exception_message = 16;
+
+    Tunnel tunnel = 17;
+
+    // 整个rpc请求是否成功
+    bool rpc_success = 18;
+
+    // moss 100014 only
+    // 端到端网络是否成功，注意不是客户端到webcdn请求是否成功
+    bool net_success = 19;
+    // 端到端网络是否有异常，注意客户端到webcdn可能是成功的
+    string net_exception_name = 20;
+    string net_exception_message = 21;
+
+    // 整个业务请求是否完成，如果是failover engine，最多两次rpc请求完成则为业务完成
+    bool biz_end = 22;
+}

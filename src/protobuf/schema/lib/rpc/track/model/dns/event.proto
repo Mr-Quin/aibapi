@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package bilibili.lib.rpc.track.model.dns;
+
+option java_multiple_files = true;
+option java_package = "com.bilibili.lib.rpc.track.model.dns";
+
+enum Source {
+    SYSTEM = 0;
+    HTTPDNS_JAVA = 1;
+    HTTPDNS_NATIVE = 2;
+}
+
+/*
+ * dns 业务事件
+ */
+message DnsEvent {
+
+    Event event = 1; // 事件类型
+    Source source = 2; // sdk enum
+    string provider = 3; // service provider ali or tencent
+
+    string resolve_host = 4; // 解析请求主机地址
+    bool resolve_fallback = 5; // 是否降级
+    bool resolve_hit = 6; // 解析是否命中
+
+    repeated string resolve_ips = 8; // 解析ip地址列表
+    int64 resolve_ttl = 9; // 解析ttl
+
+    bool resolve_expired = 10; // 解析结果是否过期
+    int64 resolve_time_remaining = 11; // 解析距离过期时间，如果已过期则为负数
+    string resolve_tag = 12; // 解析调用的标签
+
+    int32 fetch_error_code = 13; // 错误码
+    string fetch_error_message = 14; // 错误消息
+
+    string process = 15; // 进程
+    string thread = 16; // 线程
+}
+
+enum Event {
+    RESOLVE = 0; // 解析
+    FETCH_ERROR = 1; // 请求解析错误
+}

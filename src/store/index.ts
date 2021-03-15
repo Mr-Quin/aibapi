@@ -11,9 +11,12 @@ export type BiliCredential = {
 export type BiliOptions = {
     'user-agent': string
     requestDelay: number
+    origin: string
+    referer: string
+    throw: boolean
 }
 
-const biliStore = create<BiliCredential & BiliOptions>(() => ({
+const biliStore = create<Partial<BiliCredential & BiliOptions>>(() => ({
     SESSDATA: '',
     bili_jct: '',
     DedeUserID: '',
@@ -22,7 +25,9 @@ const biliStore = create<BiliCredential & BiliOptions>(() => ({
     'user-agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36',
     requestDelay: 250,
-    debug: false,
+    origin: 'https://www.bilibili.com',
+    referer: 'https://www.bilibili.com',
+    throw: false,
 }))
 
 export default biliStore

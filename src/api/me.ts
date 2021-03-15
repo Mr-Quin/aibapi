@@ -1,44 +1,39 @@
 import Api from './Api'
-import { MemberFollowingResponse, MyInfoResponse } from './index'
+import { GeneralResponse, MemberFollowingResponse } from './index'
 import getUrl from '../client/getUrl'
 
 export default {
     myInfo: new Api<MyInfoResponse>('myInfo', {
-        method: 'get',
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
         action: async (payload, options) => {
             return await getUrl('http://api.bilibili.com/x/member/web/account', options)(payload)
         },
     }),
-    memberFollowing: new Api<MemberFollowingResponse>('memberFollowing', {
-        method: 'get',
-        require: ['vmid'],
+    myFollowing: new Api<MemberFollowingResponse>('myFollowing', {
+        parents: ['myInfo'],
         optional: ['order_type', 'ps', 'pn'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
         action: async (payload, options) => {
-            return await getUrl('http://api.bilibili.com/x/relation/followings', options)(payload)
+            // omits myInfo from payload
+            const { myInfo, ...other }: { myInfo: MyInfoResponse } = payload
+            const vmid = myInfo.data?.mid
+            console.log(vmid, other)
+            return await getUrl(
+                'http://api.bilibili.com/x/relation/followings',
+                options
+            )({ vmid, ...other })
         },
     }),
-    videoDanmu: new Api<string>('videoDanmu', {
-        method: 'get',
-        require: ['oid'],
-        optional: ['pid', 'segment_index', 'type'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
-        action: async (payload, options) => {
-            const defaultPayload = {
-                type: 1,
-                segment_index: 1,
-            }
-            return await getUrl('http://api.bilibili.com/x/v2/dm/web/seg.so', {
-                ...options,
-                responseType: 'text',
-            })({ ...defaultPayload, ...payload })
-        },
-    }),
+}
+
+export interface MyInfoResponse extends GeneralResponse {
+    data?: MyInfoData
+}
+export interface MyInfoData {
+    mid: number
+    uname: string
+    userid: string
+    sign: string
+    birthday: string
+    sex: string
+    nick_free: boolean
+    rank: string
 }

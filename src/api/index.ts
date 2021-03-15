@@ -2,6 +2,8 @@ import memberApi from './member'
 import videoApi from './video'
 import me from './me'
 import Api from './Api'
+import danmaku from './danmaku'
+import search from './search'
 
 export type ApiKeyMaster =
     | 'aid'
@@ -10,8 +12,9 @@ export type ApiKeyMaster =
     | 'coin'
     | 'like'
     | 'memberAvatar'
+    | 'memberFollowing'
+    | 'memberFollowingPageCount'
     | 'memberInfo'
-    | 'uname'
     | 'memberSubmissionCount'
     | 'memberSubmissions'
     | 'memberSubmissionsAll'
@@ -19,26 +22,31 @@ export type ApiKeyMaster =
     | 'memberVideosAll'
     | 'memberVideosAllBvid'
     | 'mid'
+    | 'myFollowing'
     | 'myInfo'
+    | 'search'
     | 'spacePageCount'
     | 'triple'
+    | 'uname'
+    | 'videoDanmakuProto'
+    | 'videoDanmakuXml'
     | 'videoInfo'
     | 'videoStream'
     | 'videoTitle'
-    | 'memberFollowing'
-    | 'videoDanmu'
-
-type Validation = { [k in ApiKeyMaster]: ApiValue }
-
-const validateApi = <T>(t: T) => t
+    | 'vmid'
 
 const bilibiliApi = {
     ...memberApi,
     ...videoApi,
     ...me,
+    ...danmaku,
+    ...search,
 }
 
 // check if api contains all keys listed in ApiKeyMaster
+// keeps keyof typeof bilibiliApi and ApiKeyMaster in sync
+type Validation = { [k in ApiKeyMaster]: Required<ApiValue> }
+const validateApi = <T>(t: T) => t
 validateApi<Validation>(bilibiliApi)
 
 export default bilibiliApi
@@ -48,6 +56,7 @@ export type ValueOf<T> = T[keyof T]
 export type Unwrap<T> = T extends PromiseLike<infer U> ? U : T
 export type ExtractGeneric<T> = T extends Api<infer X> ? X : unknown
 
+// TODO: there should be a better way of doing this
 export type ApiList = typeof bilibiliApi
 // export type ApiKeys = keyof ApiList
 export type ApiKeys = ApiKeyMaster
@@ -59,7 +68,7 @@ export type ApiAcceptedReturns = Arrayable<GeneralResponse | Data | string | num
 export type ApiReturns = { [k in ApiKeys]: ExtractGeneric<ApiList[k]> }
 
 export type VideoAcceptQuality = 6 | 16 | 32 | 64 | 74 | 80 | 112 | 116 | 120 | 208
-export type ParamRequirement = Array<string | string[]>
+export type PayloadRequirement = Array<string | string[]>
 export type Data = Record<string | symbol | number, any>
 
 export interface GeneralResponse {
@@ -352,20 +361,6 @@ export interface LiveRoom {
     roomid: number
     roundStatus: number
     broadcast_type: number
-}
-
-export interface MyInfoResponse extends GeneralResponse {
-    data?: MyInfoData
-}
-export interface MyInfoData {
-    mid: number
-    uname: string
-    userid: string
-    sign: string
-    birthday: string
-    sex: string
-    nick_free: boolean
-    rank: string
 }
 
 export interface MemberFollowingResponse extends GeneralResponse {

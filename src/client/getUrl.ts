@@ -1,58 +1,52 @@
 import { sleep } from '../utils'
-import got from 'got'
 import { Data, GeneralResponse } from '../api'
+import axios from 'axios'
 
 export type UrlOption = {
     delay?: number
     method?: 'get' | 'post'
     abort?: boolean
-    responseType?: 'json' | 'text'
+    decompress?: boolean
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined
     headers?: {
+        'Accept-Encoding'?: string
+        'User-Agent'?: string
+        Accept?: string
+        Connection?: string
         Cookie?: string
         Host?: string
         Origin?: string
         Referer?: string
-        'User-Agent'?: string
     }
 }
 
-const getUrl = <T extends GeneralResponse>(url: string, options: UrlOption = {}) => async (
+const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOption = {}) => async (
     searchParams: Data = {}
-): Promise<T> => {
+) => {
+    const decompress = options.decompress ?? true
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
-    const responseType = options.responseType === 'text' ? undefined : 'json'
-
+    const responseType = options.responseType ?? 'json'
     await sleep(delay)
-    const response = await got[method]<T>(url, {
-        headers: {
-            ...headers,
-        },
-        searchParams: {
-            ...searchParams,
-        },
+
+    const response = await axios(url, {
+        method,
+        headers,
+        params: searchParams,
         responseType,
+        decompress,
+        validateStatus: (status) => status >= 200 && status < 500,
     })
-    response.on('error', (err) => {
-        throw new Error(`Fetch ${response.url} failed. ${err}`)
-    })
-    if (response.statusCode !== 200) {
-        throw new Error(
-            `Fetch ${response.url} failed. Status: ${response.statusCode} ${response.statusMessage}`
-        )
-    }
-    const body = response.body
-    // if (body.code && body.code !== 0) {
+    // if (response.status !== 200) {
     //     throw new Error(
-    //         `Fetch ${response.url} failed. Bilibili returned non-zero status code ${JSON.stringify(
-    //             body,
-    //             null,
-    //             2
-    //         )}`
+    //         `Fetch ${url} failed. Status: ${response.status} ${
+    //             response.statusText
+    //         }\nResponse body: ${JSON.stringify(response.data, null, 2)}`
     //     )
     // }
-    return body
+    const biliStatusCode = response.headers['bili-status-code']
+    return response.data as T
 }
 
 export default getUrl

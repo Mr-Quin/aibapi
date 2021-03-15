@@ -1,5 +1,4 @@
 // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/other/bvID.md
-
 const table = 'fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
 const elbat = {
     1: 13,
@@ -66,15 +65,22 @@ const xor = 177451812n
 const add = 8728348608n
 const base = ['B', 'V', '1', ' ', ' ', '4', ' ', '1', ' ', '7', ' ', ' ']
 
-// might overflow
+export const isValidBvid = (bvid: string): boolean => bvid.match(/^BV[A-Za-z0-9]{10}$/) !== null
+
+// does not return correct result for very big aid
 export const bv2av = (bvid: string): number => {
+    if (!isValidBvid(bvid)) throw TypeError('Invalid bvid')
     const r = s.reduce((acc, cur, i) => {
-        return acc + elbat[<keyof typeof elbat>bvid[cur]] * 58 ** i
-    }, 0)
-    return Number((BigInt(r) - add) ^ xor)
+        const v = BigInt(elbat[<keyof typeof elbat>bvid[cur]])
+        const va = v * 58n ** BigInt(i)
+        return acc + va
+    }, 0n)
+    const result = (r - add) ^ xor
+    if (result < 0) throw RangeError('Result aid is negative')
+    return Number(result)
 }
 
-export const av2bv = (aid: number) => {
+export const av2bv = (aid: number | bigint) => {
     if (aid < 0) throw RangeError('Aid cannot be negative')
     const x = (BigInt(aid) ^ xor) + add
     const a = [...base]

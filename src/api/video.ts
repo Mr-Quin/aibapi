@@ -1,5 +1,4 @@
-import getUrl, { UrlOption } from '../client/getUrl'
-import omit from 'lodash/omit'
+import getUrl from '../client/getUrl'
 import { mapSeries } from 'async'
 import Api from './Api'
 import biliStore from '../store'
@@ -10,130 +9,107 @@ import {
     VideoInfoResponse,
     VideoStreamResponse,
 } from './index'
-import { isSignedIn } from '../index'
+import { av2bv, bv2av, isSignedIn } from '../util'
 
 export default {
     videoInfo: new Api<VideoInfoResponse>('videoInfo', {
-        method: 'get',
         require: [['aid', 'bvid']],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
-        action: (payload, options) => {
-            return getUrl('https://api.bilibili.com/x/web-interface/view', options)(payload)
+        action: async (payload, options) => {
+            const res = await getUrl<VideoInfoResponse>(
+                'https://api.bilibili.com/x/web-interface/view',
+                options
+            )(payload)
+            return res
         },
     }),
     videoStream: new Api<VideoStreamResponse[]>('videoStream', {
-        method: 'get',
         require: [['avid', 'bvid']],
         parents: ['cid'],
         optional: ['type', 'platform', 'high_quality', 'qn', 'fourk', 'fnval'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
-        action: async (payload, options) => {
+        format: (payload) => {
             const defaultPayload = isSignedIn()
-                ? { qn: payload.qn ?? 120, fourk: 1, fnval: 0 }
+                ? { qn: 120, fourk: 1, fnval: 0 }
                 : {
                       type: 'mp4',
                       platform: 'html5',
                       high_quality: 1,
                   }
-            if (!Array.isArray(payload.cid)) {
-                return [
-                    await getUrl(
-                        'https://api.bilibili.com/x/player/playurl',
-                        options
-                    )({
-                        ...defaultPayload,
-                        ...payload,
-                    }),
-                ]
+            const aid = payload['aid']
+            if (aid !== undefined) {
+                return { ...defaultPayload, ...payload, avid: aid }
             } else {
-                return mapSeries(payload.cid, async (cid: string) => {
-                    return getUrl(
-                        'https://api.bilibili.com/x/player/playurl',
-                        options
-                    )({
-                        cid,
-                        ...omit({ ...defaultPayload, ...payload }, ['cid']),
-                    })
-                })
+                return { ...defaultPayload, ...payload }
             }
+        },
+        action: async (payload, options) => {
+            const cidList = [payload['cid']].flat()
+            return mapSeries(cidList, async (cid: string) => {
+                return getUrl(
+                    'https://api.bilibili.com/x/player/playurl',
+                    options
+                )({
+                    ...payload,
+                    cid,
+                })
+            })
         },
     }),
     like: new Api<GeneralResponse>('like', {
         method: 'post',
         require: [['aid', 'bvid']],
         optional: ['like'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-            Host: 'api.bilibili.com',
-        },
+        intercept: (payload) => ({
+            csrf: biliStore.getState().bili_jct,
+            ...payload,
+        }),
+        format: (payload) => ({ like: 1, ...payload }),
         action: async (payload, options) => {
-            const defaultPayload = {
-                like: 1,
-                csrf: biliStore.getState().bili_jct,
-            }
-            return getUrl(
-                'http://api.bilibili.com/x/web-interface/archive/like',
-                options
-            )({ ...defaultPayload, ...payload })
+            return getUrl('http://api.bilibili.com/x/web-interface/archive/like', options)(payload)
         },
     }),
     coin: new Api<CoinResponse>('coin', {
         method: 'post',
         require: [['aid', 'bvid']],
         optional: ['multiply', 'like'],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
+        intercept: (payload) => ({
+            csrf: biliStore.getState().bili_jct,
+            ...payload,
+        }),
+        format: (payload) => ({ multiply: 1, ...payload }),
         action: async (payload, options) => {
-            const defaultPayload = {
-                multiply: 1,
-                csrf: biliStore.getState().bili_jct,
-            }
-            return getUrl(
-                'http://api.bilibili.com/x/web-interface/coin/add',
-                options
-            )({ ...defaultPayload, ...payload })
+            return getUrl('http://api.bilibili.com/x/web-interface/coin/add', options)(payload)
         },
     }),
     triple: new Api<TripleResponse>('triple', {
         method: 'post',
         require: [['aid', 'bvid']],
-        headers: {
-            Origin: 'https://www.bilibili.com',
-        },
+        intercept: (payload) => ({
+            csrf: biliStore.getState().bili_jct,
+            ...payload,
+        }),
         action: async (payload, options) => {
-            const defaultPayload = {
-                csrf: biliStore.getState().bili_jct,
-            }
             return getUrl(
                 'http://api.bilibili.com/x/web-interface/archive/like/triple',
                 options
-            )({ ...defaultPayload, ...payload })
+            )(payload)
         },
     }),
     videoTitle: new Api<string>('videoTitle', {
-        method: 'get',
         parents: ['videoInfo'],
-        action: (payload: { videoInfo: VideoInfoResponse }) => payload.videoInfo.data?.title,
+        action: ({ videoInfo }: { videoInfo: VideoInfoResponse }) => videoInfo.data?.title,
     }),
     aid: new Api<number>('aid', {
-        method: 'get',
-        parents: ['videoInfo'],
-        action: (payload: { videoInfo: VideoInfoResponse }) => payload.videoInfo.data?.aid,
+        require: ['bvid'],
+        action: ({ bvid }: { bvid: string }) => bv2av(bvid),
     }),
     bvid: new Api<number>('bvid', {
-        method: 'get',
-        parents: ['videoInfo'],
-        action: (payload: { videoInfo: VideoInfoResponse }) => payload.videoInfo.data?.bvid,
+        require: ['aid'],
+        action: ({ aid }: { aid: number | bigint }) => av2bv(aid),
     }),
     cid: new Api<number[]>('cid', {
-        method: 'get',
         parents: ['videoInfo'],
-        action: (payload: { videoInfo: VideoInfoResponse }) =>
-            payload.videoInfo.data?.pages.map((page) => page.cid),
+        action: ({ videoInfo }: { videoInfo: VideoInfoResponse }) => {
+            return videoInfo.data ? videoInfo.data.pages.map((page) => page.cid) : []
+        },
     }),
 }

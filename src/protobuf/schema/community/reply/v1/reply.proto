@@ -1,0 +1,325 @@
+syntax = "proto3";
+
+package bilibili.main.community.reply.v1;
+
+option go_package          = "git.bilibili.co/bapis/bapis-go/bilibili/community/reply/v1;v1";
+option java_multiple_files = true;
+option java_package        = "com.bapis.bilibili.community.reply.v1";
+option objc_class_prefix   = "BAPICommunityReplyV1";
+
+// reply service
+service Reply {
+    // 主评论列表接口
+    rpc MainList(MainListReq) returns (MainListReply);
+    // 评论详情页列表接口
+    rpc DetailList(DetailListReq) returns (DetailListReply);
+}
+
+message DetailListReq {
+    // 评论区业务id
+    int64 oid = 1;
+    // 业务
+    int64 type = 2;
+    // 根评论id
+    int64 root = 3;
+    // 需要跳转到的子评论的id
+    int64 rpid = 4;
+    // 游标
+    CursorReq cursor = 5;
+}
+message DetailListReply {
+    // 客户端下一次翻页需要的游标
+    CursorReply cursor = 1;
+}
+
+message MainListReq {
+    // 评论区业务id
+    int64 oid = 1;
+    // 业务
+    int64 type = 2;
+    // 翻页所使用的到的游标
+    CursorReq cursor = 3;
+}
+
+message MainListReply {
+    // 客户端下一次翻页需要的游标
+    CursorReply cursor = 1;
+    // 有序的根评论列表
+    repeated ReplyInfo replies = 2;
+    // 评论区的一些控制字段
+    SubjectControl subject_control = 3;
+    // up置顶评论
+    ReplyInfo UpTop = 4;
+    // 运营置顶评论
+    ReplyInfo AdminTop = 5;
+    // 置顶的投票评论
+    ReplyInfo VoteTop = 6;
+    // 评论区的小黄条
+    Notice notice = 7;
+    // 评论区的抽奖
+    Lottery lottery = 8;
+    // 评论区的活动
+    Activity activity = 9;
+}
+
+message Notice {
+    int64 id       = 1;
+    string content = 2;
+    string link    = 3;
+}
+
+message Activity {
+    int64 activity_id = 1;
+    // -1 待审 1 上线
+    int32 activity_state = 2;
+    // 参与活动的输入框文案
+    string activity_placeholder = 3;
+}
+
+message Lottery {
+    // 抽奖id
+    int64 lottery_id = 1;
+    // 抽奖状态 （0：未开奖 1：开奖中 2：已开奖）
+    int32 lottery_status = 2;
+    // 开奖时间，时间戳
+    int64 lottery_time = 3;
+    int64 oid          = 4;
+    int64 type         = 5;
+    int64 ctime        = 6;
+    // 评论文本以及评论文本中一些特殊符号需要客户端特殊展示的一些metadata
+    Content content = 7;
+    // 评论人相关的账号信息
+    Member member = 8;
+    // 评论的一些控制字段
+    ReplyControl reply_control = 9;
+}
+
+message CursorReq {
+    // 向下翻页传递的参数
+    int64 next = 1;
+    // 向上翻页传递的参数
+    int64 prev = 2;
+    // 列表的排序方式
+    // 在主评论列表里 2-时间 3-热度
+    int32 mode = 4;
+}
+
+message CursorReply {
+    // 向下翻页传递的参数
+    int64 next = 1;
+    // 向上翻页传递的参数
+    int64 prev = 2;
+    // 往上翻已经到顶了
+    bool is_begin = 3;
+    // 往下翻已经到底了
+    bool is_end = 4;
+    // 评论总数
+    int64 count = 5;
+    // 页面title
+    string title = 6;
+    // 排序mode
+    // 在主评论列表里 2-时间 3-热度
+    int64 mode = 7;
+}
+
+message SubjectControl {
+    // 评论区up主mid
+    int64 up_mid = 1;
+    // 访问人是该评论区的协管
+    bool is_assist = 2;
+    // 评论区只读
+    bool read_only = 3;
+    // 有发起投票的权限
+    bool has_vote_access = 4;
+    // 有发起抽奖的权限
+    bool has_lottery_access = 5;
+    // 评论区有被折叠的评论
+    bool has_folded_reply = 6;
+    // 没有评论的时候背景展示的文案
+    string bg_text = 7;
+    // 输入框的展示文案
+    string input_text = 8;
+    // 是否被up主拉黑
+    bool up_blocked = 9;
+    // 发起活动的权限
+    bool has_activity_access = 10;
+    // 客户端的标题栏整个的展现的控制
+    bool show_title = 11;
+    // 在当前评论区是否展示up回复xxx up点赞了xx
+    bool show_up_action = 12;
+    // 切换按钮的展示样式 1: 热评/新评切换 2:什么都不展示
+    int32 switcher_type = 13;
+    // 输入框是否禁止输入
+    bool input_disable = 14;
+    // 发送根评论的时候 输入框的文案
+    string root_text = 15;
+    // 发送子评论的时候输入框的文案
+    string child_text = 16;
+}
+
+message ReplyInfo {
+    // 主评论列表下根评论自带的N条子评论
+    repeated ReplyInfo replies = 1;
+    // 评论ID
+    int64 id = 2;
+    // 评论区ID, 如视频就是AV号
+    int64 oid = 3;
+    // 评论区业务类型
+    int64 type = 4;
+    // 发评论人的mid
+    int64 mid = 5;
+    // 根评论ID
+    int64 root = 6;
+    // 父评论ID
+    int64 parent = 7;
+    // 评论对话ID
+    int64 dialog = 8;
+    // 评论点赞数
+    int64 like  = 9;
+    int64 ctime = 10;
+    // 评论文本以及评论文本中一些特殊符号需要客户端特殊展示的一些metadata
+    Content content = 11;
+    // 评论人相关的账号信息
+    Member member = 12;
+    // 评论的一些控制字段
+    ReplyControl reply_control = 13;
+}
+
+message Content {
+    // 评论文本
+    string message = 1;
+    // 评论中的@xxx key是对应需要高亮的文本, value是对应的用户的信息
+    // 客户端不需要在使用正则匹配做文本匹配即可
+    map<string, Member> members = 2;
+    // 评论中的[xxx] key是对应需要被渲染的表情文本，value是对应的表情的信息
+    map<string, Emote> emotes = 3;
+    // 评论中的#xxx# key是对应需要被高亮的的话题文本，value是对应的话题相关的信息
+    map<string, Topic> topics = 4;
+    // 评论中的超链接 key是对应需要被高亮的的超链接，value是对应的链接相关的信息
+    map<string, Url> urls = 5;
+    // 这条评论中假如包含一条投票，则该字段不为空,
+    // 客户端根据对应的信息做相应的展示
+    Vote vote = 6;
+}
+
+// 控制评论展示的字段
+message ReplyControl {
+    // 访问人对该条评论的行为 0-未点赞也未点踩 1-点过赞 2-点过踩
+    int32 action = 1;
+    // up主对该条评论点过赞
+    bool up_like = 2;
+    // up主对该条评论回复过
+    bool up_reply = 3;
+    // 客户端是否在这个评论卡片上展示关注按钮 true-展示 false-不展示
+    bool show_follow_btn = 4;
+    // 评论人是不是协管，如果是协管，需要在评论卡片上展示协管的身份标识
+    bool is_assist = 5;
+    // 评论下方展示的标签，新版本后这个标签都不可跳转了，就只展示文本，例如精选评论,
+    // 该字段如果为空就不需要展示标签
+    string label_text = 6;
+    // 访问人是否关注了评论人
+    bool following = 7;
+    // 访问人是否被评论人关注
+    bool followed = 8;
+    // 该条评论的评论人是否被访问者拉黑
+    bool blocked = 9;
+    // 这条评论下有被折叠的评论，用于在评论详情页下方展示折叠入口
+    bool has_folded_reply = 10;
+    // 是否是折叠评论
+    bool is_folded_reply = 11;
+    // 是否是up置顶评论
+    bool is_up_top = 12;
+    // 是否是admin置顶评论
+    bool is_admin_top = 13;
+    // 是否是置顶投票评论
+    bool is_vote_top = 14;
+}
+
+// 客户端通过在线配置拉到的正则表达式，所能匹配到的超链接对应的metadata
+message Url {
+    string title            = 1;
+    int32 state             = 2;
+    string prefix_icon      = 3;
+    string app_url_schema   = 4;
+    string app_name         = 5;
+    string app_package_name = 6;
+    string click_report     = 7;
+}
+
+// 评论中的话题、活动、频道 形如:#xxx# 对应的metadata
+message Topic {
+    // 跳转链接
+    string link = 1;
+    // id, 客户端做点击上报使用
+    int64 id = 2;
+}
+
+// 评论中的表情字符 形如:[xxx] 对应的metadata
+message Emote {
+    // 表情的大小 1-小 2-大
+    int32 size = 1;
+    // 表情资源的链接
+    string url = 2;
+}
+
+message Vote {
+    // 投票ID
+    int64 id = 1;
+    // 投票的标题
+    string title = 2;
+    // 投票的参与人数
+    int64 count = 3;
+}
+
+// 评论用到的用户相关的信息
+message Member {
+    /*
+   * 基础信息展示(头像，昵称，等级，认证标记, 性别)
+   */
+    // mid
+    int64 mid = 1;
+    // 昵称
+    string name = 2;
+    // 性别
+    string sex = 3;
+    // 用户头像
+    string face = 4;
+    // 用户的等级
+    int32 level = 5;
+    // 客户端根据这个type来展示用户的标志
+    int32 official_verify_type = 6;
+    /*
+   * 用户VIP相关信息展示(VIP铭牌，VIP皮肤)
+   * 均在vip_type != 0 即是大会员的情况下使用
+   */
+    // 0-不是大会员 1-月度会员 2-年度大会员
+    int32 vip_type = 7;
+    // vip status
+    int32 vip_status = 8;
+    // 如果是vip的话对应需要展示的vip theme
+    // 1-愚人节皮肤
+    int32 vip_theme_type = 9;
+    // 会员铭牌样式的链接
+    string vip_label_path = 10;
+    /*
+   * 装扮相关信息展示(头像挂件，评论背景卡片)
+   */
+    // 用户的头像挂件的图片资源链接
+    string garb_pendant_image = 11;
+    // 用户的背景卡片的图片资源链接
+    string garb_card_image = 12;
+    // 在有关注按钮情况下的用户的背景卡片的图片资源链接
+    string garb_card_image_with_focus = 13;
+    // 用户的背景卡片的点击跳转地址
+    string garb_card_jump_url = 14;
+    // 用户的背景卡片的粉丝编号，只在非大航海的背景卡片上生效
+    string garb_card_number = 15;
+    // 是否是粉丝
+    /*
+   * 直播粉丝勋章相关展示字段(头像挂件，评论背景卡片)
+   */
+    // 粉丝勋章的名字
+    string fans_medal_name = 16;
+    // 粉丝勋章的等级
+    int32 fans_medal_level = 17;
+}
