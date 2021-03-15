@@ -16,7 +16,7 @@ export type BiliOptions = {
     throw: boolean
 }
 
-const biliStore = create<BiliCredential & BiliOptions>(() => ({
+const biliStore = create<Partial<BiliCredential & BiliOptions>>(() => ({
     SESSDATA: '',
     bili_jct: '',
     DedeUserID: '',
