@@ -3,5 +3,6 @@ updates:
   # Enable version updates for npm
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "monthly"
