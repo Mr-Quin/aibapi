@@ -38,7 +38,9 @@ const searchTerm = { keyword: '狗头人' }
 describe('Unit tests', () => {
     before('sign in', () => {
         // sign in
-        env()
+        if (!process.env.SESSDATA) {
+            env()
+        }
         const { SESSDATA, bili_jct } = process.env
         biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
     })
