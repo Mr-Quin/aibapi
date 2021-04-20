@@ -30,7 +30,7 @@ export const biliRequest = async <ApiSlice extends RequestAcceptedInput>(
     const api = selector(bilibiliApi)
 
     if (Array.isArray(api)) {
-        return (await mapSeries(api, async (target) => {
+        return (await mapSeries(api, async (target: ApiValue) => {
             return await getApiRecursive(target)(parseParamsVid(params), cache)
         })) as Response<ApiSlice>
     } else {
