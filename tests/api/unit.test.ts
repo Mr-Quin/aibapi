@@ -35,22 +35,9 @@ const memberUndefined = {
 }
 const searchTerm = { keyword: '狗头人' }
 
-describe('Unit tests', () => {
-    before('sign in', () => {
-        // sign in
-        if (!process.env.SESSDATA) {
-            env()
-        }
-        const { SESSDATA, bili_jct } = process.env
-        biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
-    })
+describe('Regular tests', () => {
     afterEach('reset global error configuration to not throw', () => {
         biliStore.setState({ throw: false })
-    })
-    it('can sign in', async () => {
-        const info = await biliRequest((api) => api.myInfo)
-        expect(isSignedIn()).to.equal(true)
-        expect(info).to.have.property('code').to.equal(0)
     })
 
     describe('Aid tests', () => {
@@ -97,13 +84,13 @@ describe('Unit tests', () => {
 
     describe('VideoStream tests', () => {
         it('works with aid and bvid', async () => {
-            const stream1 = await biliRequest((api) => api.videoStream, { vid: video1.aid })
-            const stream2 = await biliRequest((api) => api.videoStream, { vid: video1.bvid })
+            const stream1 = await biliRequest((api) => api.videoStream, { vid: video2.aid })
+            const stream2 = await biliRequest((api) => api.videoStream, { vid: video2.bvid })
             expect(stream1).to.be.an('array')
             stream1.forEach((v, i) => {
                 expect(v).to.have.property('code').to.eq(stream2[i].code).to.eq(0)
             })
-        }).timeout(15000)
+        }).timeout(20000)
         it('works with single and multi-part videos', async () => {
             const streamMulti = await biliRequest((api) => api.videoStream, video1)
             const streamSingle = await biliRequest((api) => api.videoStream, video2)
@@ -211,19 +198,39 @@ describe('Unit tests', () => {
             expect(result).to.have.property('code').to.be.an('number').to.be.eq(0)
         })
     })
-
-    describe('Interaction tests', () => {
-        it('can like videos', async () => {
-            const like = await biliRequest(({ like }) => like, video1)
-            expect(like).to.have.property('code').to.be.an('number').to.be.gte(0)
-        })
-        it('can coin videos', async () => {
-            const coin = await biliRequest(({ coin }) => coin, video1)
-            expect(coin).to.have.property('code').to.be.an('number').to.be.gte(0)
-        })
-        it('can triple combo', async () => {
-            const triple = await biliRequest(({ triple }) => triple, video1)
-            expect(triple).to.have.property('code').to.be.an('number').to.be.gte(0)
-        })
-    })
 })
+
+// describe('Regular tests', () => {
+//     before('sign in', () => {
+//         // sign in
+//         if (!process.env.SESSDATA) {
+//             env()
+//         }
+//         const { SESSDATA, bili_jct } = process.env
+//         biliConfig({ SESSDATA: SESSDATA, bili_jct: bili_jct })
+//     })
+//     afterEach('reset global error configuration to not throw', () => {
+//         biliStore.setState({ throw: false })
+//     })
+//
+//     it('can sign in', async () => {
+//         const info = await biliRequest((api) => api.myInfo)
+//         expect(isSignedIn()).to.equal(true)
+//         expect(info).to.have.property('code').to.equal(0)
+//     })
+//
+//     describe('Interaction tests', () => {
+//         it('can like videos', async () => {
+//             const like = await biliRequest(({ like }) => like, video1)
+//             expect(like).to.have.property('code').to.be.an('number').to.be.gte(0)
+//         })
+//         it('can coin videos', async () => {
+//             const coin = await biliRequest(({ coin }) => coin, video1)
+//             expect(coin).to.have.property('code').to.be.an('number').to.be.gte(0)
+//         })
+//         it('can triple combo', async () => {
+//             const triple = await biliRequest(({ triple }) => triple, video1)
+//             expect(triple).to.have.property('code').to.be.an('number').to.be.gte(0)
+//         })
+//     })
+// })
