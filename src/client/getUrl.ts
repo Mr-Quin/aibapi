@@ -1,6 +1,7 @@
 import { sleep } from '../utils'
 import { Data, GeneralResponse } from '../api'
 import axios from 'axios'
+import { brotliDecompressSync } from 'zlib'
 
 export type UrlOption = {
     delay?: number
@@ -27,7 +28,7 @@ const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOpt
     const headers = options.headers ?? {}
     const delay = options.delay ?? 250
     const method = options.method ?? 'get'
-    const responseType = options.responseType ?? 'json'
+    const responseType = options.responseType ?? 'arraybuffer'
     await sleep(delay)
 
     const response = await axios(url, {
@@ -38,6 +39,13 @@ const getUrl = <T extends GeneralResponse | Buffer>(url: string, options: UrlOpt
         decompress,
         validateStatus: (status) => status >= 200 && status < 500,
     })
+
+    if (decompress) {
+        const decompressed = brotliDecompressSync(response.data).toString()
+        const parsed = JSON.parse(decompressed)
+        return parsed as T
+    }
+
     // if (response.status !== 200) {
     //     throw new Error(
     //         `Fetch ${url} failed. Status: ${response.status} ${

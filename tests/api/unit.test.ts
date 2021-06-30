@@ -168,7 +168,7 @@ describe('Unit tests', () => {
 
     describe('uname tests', () => {
         it('works', async () => {
-            const name = await biliRequest((api) => api.uname, member1)
+            const name = await biliRequest((api) => api.uname, { mid: member1.mid })
             expect(name).to.eq(member1.uname)
         })
     })
@@ -180,11 +180,11 @@ describe('Unit tests', () => {
                 .to.have.property('code')
                 .to.be.a('number')
                 .to.satisfy((code: number) => code === 0 || code === -101)
-        })
+        }).timeout(10000)
         it('tries to get my following', async () => {
             const followings = await biliRequest((api) => api.myFollowing)
             expect(followings).to.have.property('code').to.be.a('number')
-        })
+        }).timeout(10000)
     })
 
     describe('Danmaku tests', () => {

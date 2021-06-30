@@ -6,7 +6,10 @@ export default {
     search: new Api<SearchResponse>('search', {
         require: ['keyword'],
         action: async (payload, options) => {
-            return getUrl('http://api.bilibili.com/x/web-interface/search/all/v2', options)(payload)
+            return getUrl(
+                'https://api.bilibili.com/x/web-interface/search/all/v2',
+                options
+            )(payload)
         },
     }),
 }

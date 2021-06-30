@@ -1,7 +1,7 @@
 import Api from './Api'
 import { mapSeries } from 'async'
 import getUrl from '../client/getUrl'
-import zlib from 'zlib'
+import { inflateRawSync, unzipSync } from 'zlib'
 
 export default {
     videoDanmakuProto: new Api<Buffer[]>('videoDanmakuProto', {
@@ -20,13 +20,15 @@ export default {
         },
         action: async (payload, options) => {
             const oidList: number[] = [payload['oid']].flat()
-            return mapSeries(oidList, async (oid) => {
+            const compressed: Buffer[] = await mapSeries(oidList, async (oid) => {
                 const p = { ...payload, oid }
                 return await getUrl<Buffer>('https://api.bilibili.com/x/v2/dm/web/seg.so', {
                     ...options,
                     responseType: 'arraybuffer',
+                    decompress: false,
                 })(p)
             })
+            return compressed.map((buffer) => unzipSync(buffer))
         },
     }),
     videoDanmakuXml: new Api<string[]>('videoDanmakuXml', {
@@ -45,7 +47,7 @@ export default {
                     decompress: false,
                 })(p)
             })
-            return compressed.map((buffer) => zlib.inflateRawSync(buffer).toString())
+            return compressed.map((buffer) => inflateRawSync(buffer).toString())
         },
     }),
 }
