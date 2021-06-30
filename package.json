@@ -1,6 +1,6 @@
 {
   "name": "@mr-quin/bilibili-api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Api wrapper for Bilibili",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,9 +24,9 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",
-    "got": "^11.8.1",
+    "got": "^11.8.2",
     "path": "^0.12.7",
-    "zustand": "^3.3.2"
+    "zustand": "^3.5.5"
   },
   "devDependencies": {
     "@types/async": "^3.2.5",
