@@ -24,9 +24,9 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",
-    "got": "^11.8.1",
+    "got": "^11.8.2",
     "path": "^0.12.7",
-    "zustand": "^3.3.2"
+    "zustand": "^3.5.5"
   },
   "devDependencies": {
     "@types/async": "^3.2.5",
